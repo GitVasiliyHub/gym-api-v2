@@ -7,17 +7,10 @@ from .routers.exercise import router as ex_router
 app = FastAPI()
 origins = [
     "*",
-    "https://127.0.0.1:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost",
-    "http://localhost:5173",
-    "https://localhost:5173",
-    "https://127.0.0.1:58004",
-    "http://127.0.0.1:58004",
-    "https://127.0.0.1",
-    "http://127.0.0.1",
-    "https://ic2xq5-89-163-231-163.ru.tuna.am",
-    "https://ic2xq5-89-163-231-163.ru.tuna.am/"
+    "https://localhost:3000",
+    "http://localhost:3000",
+    "https://127.0.0.1:3000",
+    "http://127.0.0.1:3000",
 ]
 
 app.add_middleware(
