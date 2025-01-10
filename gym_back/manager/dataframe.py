@@ -47,7 +47,7 @@ def training_list(df: DataFrame):
 class DataFrameManager:
     def __init__(
         self,
-        path='/home/vasiliy/code/gym_back/gym_back/files/12_2024.xlsx',
+        path='/home/vasiliy/code/gym-back/gym_back/files/12_2024.xlsx',
     ):
         self.dataframe_path = path
         self.read_dataframe()

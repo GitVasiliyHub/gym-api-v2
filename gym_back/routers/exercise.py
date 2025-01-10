@@ -73,7 +73,7 @@ def current(week: int, day: int):
     return json.dumps(exercises, ensure_ascii=False).encode('utf8')
 
 
-@router.put('/update')
+@router.get('/update')
 def update_set(week: int, day: int, st: int, ex_idx: int, value: str):
     manager = DataFrameManager()
     manager.update(week=week, tr=day, st=st, ex=ex_idx, value=value)

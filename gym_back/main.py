@@ -16,6 +16,8 @@ origins = [
     "http://127.0.0.1:58004",
     "https://127.0.0.1",
     "http://127.0.0.1",
+    "https://ic2xq5-89-163-231-163.ru.tuna.am",
+    "https://ic2xq5-89-163-231-163.ru.tuna.am/"
 ]
 
 app.add_middleware(
