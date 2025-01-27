@@ -14,6 +14,7 @@ class Exercise(BaseModel):
     exercise: str
     weight: str
     rest: str
+    repeats: Optional[str] = None
     exerciseIdx: Optional[int]
     sets: List[Union[str, int, InSet]]  
   

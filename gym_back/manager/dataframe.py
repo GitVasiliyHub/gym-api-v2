@@ -47,7 +47,7 @@ def training_list(df: DataFrame):
 class DataFrameManager:
     def __init__(
         self,
-        path='/home/vasiliy/code/gym-back/gym_back/files/12_2024.xlsx',
+        path='/home/vasiliy/code/gym-back/gym_back/files/01_2025.xlsx',
     ):
         self.dataframe_path = path
         self.read_dataframe()
@@ -80,8 +80,6 @@ class DataFrameManager:
         # df['GYM'] = df['GYM'].replace(nan, '-')
         exercises = []
         for idx, row in df.iterrows():
-            print(idx)
-            print(row)
             sts = list(row[sets])
             ex = Exercise(
                 week=row['Неделя'],
@@ -91,6 +89,7 @@ class DataFrameManager:
                 exercise=row['Упражнения'],
                 weight=str(row['Рабочий вес']),
                 rest=str(row['Отдых между подходами']),
+                repeats=str(row['Количество подходов/повторений']),
                 sets=[
                     InSet(numField=i, value=sts[i]) for i in range(len(sts))
                 ],
