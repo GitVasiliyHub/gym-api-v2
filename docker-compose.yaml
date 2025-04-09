@@ -1,20 +1,46 @@
 version: '3.8'
 
 services:
+  api:
+    build:
+      context: . 
+    container_name: api
+    environment:
+      GYM_API__DB__HOST: localhost
+      GYM_API__DB__PORT: 5433
+      GYM_API__DB__LOGIN: ${DB_LOGIN}
+      GYM_API__DB__PASSWORD: ${DB_PASSWORD}
+      GYM_API__DB__DATABASE: gym
+    ports:
+      - target: 8000
+        published: ${PORT}
+    volumes:
+      - ./gym_api:/app/gym_api
+    command:
+      - /bin/bash
+      - -c
+      - | 
+        python -m uvicorn "gym_api.main:app" "--host" "0.0.0.0"
+        # tail -f /dev/null
   db:
     image: postgres:latest
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: ${DB_LOGIN}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: gym
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql/data
 
   redis:
     image: redis:latest
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
-      - cache:~/storage-db/redis/data
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  db_data:
+  redis_data:

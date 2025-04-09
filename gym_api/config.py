@@ -11,8 +11,8 @@ from pydantic_settings import (
 
 
 API_STATIC_PATH = '/static'
-ENV_FILE = os.getenv('GYM_BACK__CONFIG__ENV_FILE')
-CONFIG_FILE_PATH = os.getenv('GYM_BACK__CONFIG')
+ENV_FILE = os.getenv('GYM_API__CONFIG__ENV_FILE')
+CONFIG_FILE_PATH = os.getenv('GYM_API__CONFIG')
 
 
 class Redis(BaseModel):
@@ -62,7 +62,7 @@ class GymSettings(BaseModel):
     )
 
 class Settings(BaseSettings):
-    gym_back: GymSettings = Field(
+    gym_api: GymSettings = Field(
         default_factory=GymSettings,
         description='Настройки библиотеки'
     )
@@ -94,7 +94,7 @@ class Settings(BaseSettings):
             file_secret_settings
         )
 
-config: GymSettings = Settings().gym_back
+config: GymSettings = Settings().gym_api
 db = config.db
 redis = config.redis
 print(Settings())

@@ -65,41 +65,41 @@ create table gym.task (
 );
 
 
-SELECT setval(
-    pg_get_serial_sequence('master', 'master_id'), 
-    COALESCE((SELECT MAX(master_id) FROM master), 0) + 1, 
-    false
-);
+-- SELECT setval(
+--     pg_get_serial_sequence('master', 'master_id'), 
+--     COALESCE((SELECT MAX(master_id) FROM master), 0) + 1, 
+--     false
+-- );
 
 -----------------------------
 
 
 
 
-create table task_group_history (
-	task_group_id int references gym.task_group(task_group_id),
-	parent int references gym.task_group(task_group_id),
-	status text not null, --fixed, planning
-	CONSTRAINT check_same_gymer_constraint CHECK (check_same_gymer(task_group_id, parent_id));
-)
+-- create table task_group_history (
+-- 	task_group_id int references gym.task_group(task_group_id),
+-- 	parent int references gym.task_group(task_group_id),
+-- 	status text not null, --fixed, planning
+-- 	CONSTRAINT check_same_gymer_constraint CHECK (check_same_gymer(task_group_id, parent_id));
+-- )
 
-CREATE OR REPLACE FUNCTION check_same_gymer(
-    p_task_group_id INT,
-    p_parent_id INT
-) RETURNS BOOLEAN AS $$
-BEGIN
-    IF p_parent_id = p_task_group_id THEN
-        RETURN TRUE;
-    END IF;
+-- CREATE OR REPLACE FUNCTION check_same_gymer(
+--     p_task_group_id INT,
+--     p_parent_id INT
+-- ) RETURNS BOOLEAN AS $$
+-- BEGIN
+--     IF p_parent_id = p_task_group_id THEN
+--         RETURN TRUE;
+--     END IF;
     
-    RETURN (
-        SELECT g1.gymer_id = g2.gymer_id
-        FROM gym.task_group g1
-        JOIN gym.task_group g2 ON g2.task_group_id = p_parent_id
-        WHERE g1.task_group_id = p_task_group_id
-    );
-END;
-$$ LANGUAGE plpgsql;
+--     RETURN (
+--         SELECT g1.gymer_id = g2.gymer_id
+--         FROM gym.task_group g1
+--         JOIN gym.task_group g2 ON g2.task_group_id = p_parent_id
+--         WHERE g1.task_group_id = p_task_group_id
+--     );
+-- END;
+-- $$ LANGUAGE plpgsql;
 
-ALTER TABLE gym.task_group_history
-ADD 
+-- ALTER TABLE gym.task_group_history
+-- ADD 

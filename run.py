@@ -1,5 +1,5 @@
 
-from gym_back.main import run 
+from gym_api.main import run 
 
 
 if __name__ == '__main__':
