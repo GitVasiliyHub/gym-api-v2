@@ -1,0 +1,7 @@
+gym_back:
+  db:
+    host: localhost
+    port: 5433
+    login: admin
+    password: admin
+    database: gym

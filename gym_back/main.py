@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.exercise import router as ex_router
+from .routers.gym import router as gym_router
 
 app = FastAPI()
 origins = [
@@ -21,10 +22,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router=ex_router, prefix='/exercise')
+app.include_router(router=gym_router, prefix='/gym')
 
 def run():
-    # asyncio.run(main())
-
     uvicorn.run(
         app=app,
         host="0.0.0.0",
