@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.exercise import router as ex_router
-from .routers.gym import router as gym_router
+from .routers.users import router as user_router
 
 app = FastAPI()
 origins = [
@@ -22,7 +22,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.include_router(router=ex_router, prefix='/exercise')
-app.include_router(router=gym_router, prefix='/gym')
+app.include_router(router=user_router, prefix='/gym')
 
 def run():
     uvicorn.run(

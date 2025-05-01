@@ -1,4 +1,4 @@
-gym_backend:
+gym_api:
   db:
     host: localhost
     port: 5433
