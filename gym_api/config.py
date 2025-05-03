@@ -11,7 +11,7 @@ from pydantic_settings import (
 
 
 API_STATIC_PATH = '/static'
-ENV_FILE = os.getenv('GYM_API__CONFIG__ENV_FILE')
+ENV_FILE = os.getenv('GYM_API__CONFIG__ENV_FILE', '.env')
 CONFIG_FILE_PATH = os.getenv('GYM_API__CONFIG')
 
 

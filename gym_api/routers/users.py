@@ -8,9 +8,7 @@ from ..schemas.user import MastersGymer
 from ..repositories.gym import GymRepository
 
 
-
-
-router = APIRouter()
+router = APIRouter(prefix='/user')
 
 @router.get(
     '/master/{master_id}/gymers',

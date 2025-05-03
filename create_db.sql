@@ -52,6 +52,8 @@ create table gym.task_group (
 	status varchar(15) not null default 'planed',
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz
+	start_dttm timestamptz
+	num int
 );
 
 create table gym.task (

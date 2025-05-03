@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .routers.exercise import router as ex_router
 from .routers.users import router as user_router
+from .routers.tasks import router as task_router
 
 app = FastAPI()
 origins = [
@@ -21,8 +21,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(router=ex_router, prefix='/exercise')
-app.include_router(router=user_router, prefix='/gym')
+app.include_router(router=user_router, prefix='/gym', tags=['user'])
+app.include_router(router=task_router, prefix='/gym', tags=['task'])
 
 def run():
     uvicorn.run(
@@ -32,6 +32,3 @@ def run():
         # ssl_certfile='/home/vasiliy/code/gym/gym/cert/cert.pem',
         # ssl_keyfile='/home/vasiliy/code/gym/gym/cert/key.pem'
         )
-
-
-
