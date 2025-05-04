@@ -4,6 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .routers.users import router as user_router
 from .routers.tasks import router as task_router
+from .routers.task_groups import router as tg_router
+from .routers.exercises import router as ex_router
+
 
 app = FastAPI()
 origins = [
@@ -23,6 +26,8 @@ app.add_middleware(
 )
 app.include_router(router=user_router, prefix='/gym', tags=['user'])
 app.include_router(router=task_router, prefix='/gym', tags=['task'])
+app.include_router(router=tg_router, prefix='/gym', tags=['task_group'])
+app.include_router(router=ex_router, prefix='/gym', tags=['exercises'])
 
 def run():
     uvicorn.run(

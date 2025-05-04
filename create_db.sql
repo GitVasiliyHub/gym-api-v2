@@ -1,3 +1,5 @@
+create schema gym;
+
 CREATE TABLE gym.user (
 	user_id serial PRIMARY KEY,
 	username text NOT null unique,
@@ -31,7 +33,6 @@ create table gym.master_gym (
 	close_dttm timestamptz
 );
 
------
 create table gym.exercise (
 	exercise_id serial primary key,
 	master_id int references gym.master(master_id),
@@ -51,8 +52,8 @@ create table gym.task_group (
 	properties jsonb,
 	status varchar(15) not null default 'planed',
 	create_dttm timestamptz not null default now(),
-	update_dttm timestamptz
-	start_dttm timestamptz
+	update_dttm timestamptz,
+	start_dttm timestamptz,
 	num int
 );
 

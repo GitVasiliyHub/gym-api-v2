@@ -11,16 +11,15 @@ from ..repositories.gym import GymRepository
 router = APIRouter(prefix='/user')
 
 @router.get(
-    '/master/{master_id}/gymers',
+    '/{master_id}/gymers',
     summary='Get master gymers',
     response_model=List[MastersGymer]
 )
-async def get_master_gymers(
+async def get_list_of_masters_gymer(
     master_id: int = Path(
         ...,
         description='master id'
     )
 ):
-    result = await GymRepository.select_master_gymers_data(master_id)
+    return await GymRepository.select_master_gymers_data(master_id)
     
-    return result

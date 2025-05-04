@@ -19,23 +19,7 @@ from ..schemas.task import (
 router = APIRouter(prefix='/task')
 
 
-@router.post("/task_group", response_model=TaskGroup)
-async def create_task_group(
-    master_id: int = Query(
-        ...,
-        description='master id'
-    ),
-    task_group: TaskGroupCreate = Body(
-        ...,
-        description='Параметры создания task_group'
-    ),
-    # current_master: dict = Depends(get_current_master)
-):
-    return await GymRepository.create_task_group(
-        master_id=master_id,
-        gymer_id=task_group.gymer_id,
-        properties=task_group.properties
-    )
+
     
 @router.post("", response_model=Task)
 async def create_task(
@@ -83,90 +67,6 @@ async def update_task(
     if not updated_task:
         raise HTTPException(status_code=404, detail="Task not found")
     return updated_task
-
-@router.get("/task_groups", response_model=List[TaskGroup])
-async def get_tasks_by_group(
-    master_id: Optional[int] = Query(
-        None,
-        description='master id'
-    ),
-    gymer_id: Optional[int] = Query(
-        None,
-        description='gymmer id'
-    ),
-    status: str = Query(
-        'planned',
-        description='Статус task_group'
-    )
-    # current_master: dict = Depends(get_current_master)
-):
-    if master_id is None and gymer_id is None:
-        raise HTTPException(
-            status_code=400,
-            detail="Set master_id or gymmer_id or both"
-            )
-    task_groups = await GymRepository.get_task_groups(
-        master_id=master_id,
-        gymer_id=gymer_id,
-        status=status    
-    )
-    if not task_groups:
-        raise HTTPException(status_code=404, detail="Tasks not found")
-    return task_groups
-    
-    
-@router.get("/{task_group_id}/tasks", response_model=List[Task])
-async def get_tasks_by_group(
-    task_group_id: int = Path(
-        ...,
-        description='task_group id'
-    ),
-    # current_master: dict = Depends(get_current_master)
-):
-    # Здесь должна быть проверка, что task_group принадлежит текущему мастеру
-    tasks = await GymRepository.get_tasks_by_group(task_group_id)
-    if not tasks:
-        raise HTTPException(status_code=404, detail="Tasks not found")
-    return tasks
-
-@router.get(
-    "/master/{master_id}/exercises",
-    response_model=List[Exercise]
-)
-async def get_master_exercises(
-    master_id: int,
-    search: Optional[str] = Query(
-        None,
-        description="Поиск по названию упражнения"
-    ),
-    # current_master: dict = Depends(get_current_master)
-):
-    # if master_id != current_master["master_id"]:
-    #     raise HTTPException(status_code=403, detail="Forbidden")
-    
-    return await GymRepository.get_exercises_by_master(
-        master_id=master_id,
-        search=search
-    )
-
-
-@router.get(
-    "/exercises/{exercise_id}/descriptions",
-    response_model=List[ExerciseDescSimple],
-)
-async def get_exercise_description_ids(
-    exercise_id: int,
-    # current_master: dict = Depends(get_current_master)
-):
-    # Проверяем принадлежность упражнения мастеру
-    exercise = await GymRepository.get_exercise_by_id(exercise_id)
-    if not exercise:
-        raise HTTPException(
-            status_code=404,
-            detail="Exercise not found or access denied"
-        )
-
-    return await GymRepository.get_exercise_descriptions(exercise_id)
 
 
 @router.get("/master_history")

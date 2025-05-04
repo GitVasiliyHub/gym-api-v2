@@ -6,14 +6,27 @@ import random
 fake = Faker()
 
 # Подключение к базе данных PostgreSQL
-conn = psycopg2.connect(
-    dbname="gym",
-    user="admin",
-    password="admin",
-    host="localhost",
-    port="5433"
+local_db = dict(
+    dbname='gym',
+    user='admin',
+    password='admin',
+    host='localhost',
+    port=5433
 )
+amvera_db = dict(
+    dbname='gym',
+    user='didvasiliy',
+    password='rvVk3KsVuyaKh!r',
+    host='gym-db-didvasiliy.db-msk0.amvera.tech',
+    port=5432
+)
+conn = psycopg2.connect(**amvera_db)
 cursor = conn.cursor()
+
+def execute_ddl():
+    with open('create_db.sql', 'r') as f:
+        query = f.read()
+    cursor.execute(query)
 
 # Функция для вставки мастеров
 def insert_masters():
@@ -129,7 +142,9 @@ def insert_exercise(exercises, master_id=1):
             INSERT INTO gym.exercise_desc (exercise_id, description)
             VALUES (%s, %s );
         """, (exercise_id, _[1]))
-        
+
+#создаем таблицы
+execute_ddl()
 
 # Вставляем мастеров и получаем их master_id
 master2_id, master3_id = insert_masters()
