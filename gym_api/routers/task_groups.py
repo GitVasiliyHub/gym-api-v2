@@ -10,7 +10,11 @@ from ..schemas.task import TaskGroup, TaskGroupCreate
 router = APIRouter(prefix='/task_group')
 
 
-@router.post("", response_model=TaskGroup)
+@router.post(
+    "",
+    summary='Creating task group',
+    response_model=TaskGroup
+)
 async def create_task_group(
     master_id: int = Query(
         ...,
@@ -31,6 +35,7 @@ async def create_task_group(
 
 @router.get(
     "",
+    summary='Getting a list of task group',
     response_model=List[TaskGroup]
 )
 async def list_task_group(

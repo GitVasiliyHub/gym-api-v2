@@ -70,7 +70,9 @@ class TaskGroupWithTasks(BaseModel):
     status: str
     create_dttm: datetime
     update_dttm: Optional[datetime]
-    tasks: List[TaskWithExercise]
+    num: Optional[int]
+    start_dttm: Optional[datetime]
+    task: List[TaskWithExercise]
 
     model_config = ConfigDict(from_attributes=True)
     

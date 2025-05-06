@@ -12,7 +12,7 @@ router = APIRouter(prefix='/user')
 
 @router.get(
     '/{master_id}/gymers',
-    summary='Get master gymers',
+    summary='Getting a list of master gymers',
     response_model=List[MastersGymer]
 )
 async def get_list_of_masters_gymer(

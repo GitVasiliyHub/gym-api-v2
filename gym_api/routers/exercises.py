@@ -14,7 +14,11 @@ from ..schemas.task import (
 router = APIRouter(prefix='/exercise')
 
 
-@router.get("/{task_group_id}/tasks", response_model=List[Task])
+@router.get(
+    "/{task_group_id}/tasks",
+    summary='Getgin a list of task by task_group_id',
+    response_model=List[Task]
+)
 async def get_tasks_with_exercise_by_group(
     task_group_id: int = Path(
         ...,
@@ -30,7 +34,8 @@ async def get_tasks_with_exercise_by_group(
 
 
 @router.get(
-    "/master/{master_id}/exercises",
+    "/{master_id}/exercises",
+    summary='Getting a list of exercise by master_id',
     response_model=List[Exercise]
 )
 async def get_list_of_exercise(
@@ -51,7 +56,8 @@ async def get_list_of_exercise(
 
 
 @router.get(
-    "/exercises/{exercise_id}/descriptions",
+    "/{exercise_id}/descriptions",
+    summary='Getting a list of exercise description by exercise_id',
     response_model=List[ExerciseDescSimple],
 )
 async def get_list_of_exercise_description(

@@ -8,7 +8,10 @@ from .routers.task_groups import router as tg_router
 from .routers.exercises import router as ex_router
 
 
-app = FastAPI()
+app = FastAPI(
+    title='Api gym',
+    version='0.0.1'
+)
 origins = [
     "*",
     "https://localhost:3000",

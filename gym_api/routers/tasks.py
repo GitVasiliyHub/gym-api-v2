@@ -7,12 +7,9 @@ from fastapi import APIRouter, Path, Query, HTTPException, Body
 from ..repositories.gym import GymRepository
 from ..schemas.task import (
     Task, 
-    TaskGroup, 
-    TaskCreate, 
-    TaskGroupCreate, 
+    TaskCreate,  
     TaskUpdate,
-    Exercise,
-    ExerciseDescSimple
+    TaskGroupWithTasks
 )
 
 
@@ -20,8 +17,11 @@ router = APIRouter(prefix='/task')
 
 
 
-    
-@router.post("", response_model=Task)
+@router.post(
+    "",
+    summary='Creating a new task',
+    response_model=Task
+)
 async def create_task(
     task: TaskCreate = Body(
         ...,
@@ -45,7 +45,11 @@ async def create_task(
     )
 
 
-@router.put("/{task_id}", response_model=Task)
+@router.put(
+    "/{task_id}",
+    summary='Updating task by task_id',
+    response_model=Task
+)
 async def update_task(
     task_id: int = Path(
         ...,
@@ -69,23 +73,29 @@ async def update_task(
     return updated_task
 
 
-@router.get("/master_history")
+@router.get(
+    "/{gymer_id}/history",
+    summary='Getting training history by master_id and gymmer_id',
+    response_model=List[TaskGroupWithTasks]
+)
 async def get_master_task_groups_with_tasks(
-    # current_master: dict = Depends(get_current_master),
+    gymer_id: int = Path(
+        ...
+    ),
+    master_id: Optional[int] = Query(
+        None
+    ),
     page_no: int = Query(1, description='Номер страницы'),
     page_size: int = Query(100, description='Размер страницы'),
-    gymer_id: Optional[int] = Query(None),
-    master_id: Optional[int] = Query(None)
+    # current_master: dict = Depends(get_current_master),
 ):
     # Фильтрация по мастеру и дополнительным параметрам
     limit = page_size
     offset = (page_no - 1) * page_size
     
-    task_groups = await GymRepository.get_master_task_groups_with_tasks(
+    return await GymRepository.get_master_task_groups_with_tasks(
         master_id=master_id,
         gymer_id=gymer_id,
         limit=limit,
         offset=offset
     )
-    
-    return 

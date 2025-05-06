@@ -184,19 +184,32 @@ class GymRepository(BaseRepository):
     @_session_provider
     async def get_master_task_groups_with_tasks(
         cls,
-        master_id: int,
         gymer_id: int,
         limit: int,
         offset: int,
+        master_id: Optional[int] = None,
         session: AsyncSession = None
     ):
-        stmt = select(model.TaskGroup).where(
-            model.TaskGroup.master_id == master_id,
+        where_cond = [
             model.TaskGroup.gymer_id == gymer_id
+        ]
+        if master_id:
+            where_cond.append(
+                model.TaskGroup.master_id == master_id
+            )
+        stmt = select(model.TaskGroup).where(
+            *where_cond
         ).options(
-            joinedload(model.TaskGroup.tasks)
+            joinedload(model.TaskGroup.task)
             .joinedload(model.Task.exercise_desc)
+            .joinedload(model.ExerciseDesc.exercise)
         ).offset(offset).limit(limit)
+        # if master_id:
+        #     stmt = stmt.where(
+        #         model.TaskGroup.master_id == master_id
+        #     )
+        
+        
         
         result = await session.execute(stmt)
         return result.scalars().unique().all()
