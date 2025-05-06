@@ -68,6 +68,17 @@ class GymRepository(BaseRepository):
         properties: dict,
         session: AsyncSession = None
     ):
+        stmt = select(model.MasterGym.gymer_id).where(
+            model.MasterGym.master_id == master_id,
+            model.MasterGym.close_dttm.is_(None)
+        )
+        user = await session.execute(stmt)
+        
+        if not user.scalars().all():
+            raise HTTPException(
+                status_code=404,
+                detail="there is no master_id for gymer_id"
+            )
         task_group = model.TaskGroup(
             master_id=master_id,
             gymer_id=gymer_id,

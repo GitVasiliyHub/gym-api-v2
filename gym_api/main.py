@@ -30,7 +30,7 @@ app.add_middleware(
 app.include_router(router=user_router, prefix='/gym', tags=['user'])
 app.include_router(router=task_router, prefix='/gym', tags=['task'])
 app.include_router(router=tg_router, prefix='/gym', tags=['task_group'])
-app.include_router(router=ex_router, prefix='/gym', tags=['exercises'])
+app.include_router(router=ex_router, prefix='/gym', tags=['exercise'])
 
 def run():
     uvicorn.run(
