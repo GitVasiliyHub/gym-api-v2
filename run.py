@@ -10,5 +10,4 @@ if __name__ == '__main__':
     logger.info('Runing app gym-api')
     logger.info(os.environ)
     import uvicorn
-    import gym_api
     uvicorn.run("gym_api.main:app", host="0.0.0.0", port=3000, reload=True)

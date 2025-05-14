@@ -21,3 +21,4 @@ aioredis==2.0.1
 sqlalchemy==2.0.40
 psycopg2-binary
 safir[redis]
+pyyaml==6.0.2

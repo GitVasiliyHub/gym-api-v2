@@ -26,7 +26,8 @@ class User(Base):
     first_name: Mapped[Optional[str]] = mapped_column(Text)
     last_name: Mapped[Optional[str]] = mapped_column(Text)
     email: Mapped[Optional[str]] = mapped_column(Text)
-
+    photo: Mapped[Optional[str]] = mapped_column(Text)
+    
     gymer: Mapped[List['Gymer']] = relationship('Gymer', back_populates='user')
     master: Mapped[List['Master']] = relationship('Master', back_populates='user')
 
