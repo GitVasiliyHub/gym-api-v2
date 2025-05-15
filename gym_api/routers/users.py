@@ -30,7 +30,7 @@ async def get_list_of_masters_gymer(
     summary='Getting user data by telegram_id',
     response_model=User
 )
-async def get_list_of_masters_gymer(
+async def get_user_data_by_telegram_id(
     telegram_id: int = Path(
         ...,
         description='user id'
