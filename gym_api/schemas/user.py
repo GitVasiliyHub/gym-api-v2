@@ -6,6 +6,7 @@ class MastersGymer(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     username: str
+    photo: Optional[str] = None
     gymer_id: int
     
 

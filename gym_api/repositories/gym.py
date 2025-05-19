@@ -140,6 +140,7 @@ class GymRepository(BaseRepository):
         
         statement = select(
             u.username,
+            u.photo,
             g.gymer_id
         ).join(
             g, g.user_id == u.user_id
