@@ -65,6 +65,7 @@ async def update_task(
 
     updated_task = await GymRepository.update_task(
         task_id=task_id,
+        exercise_desc_id=task_update.exercise_desc_id,
         status=task_update.status,
         properties=task_update.properties
     )

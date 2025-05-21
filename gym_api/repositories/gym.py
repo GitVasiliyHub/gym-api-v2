@@ -244,6 +244,7 @@ class GymRepository(BaseRepository):
     async def update_task(
         cls,
         task_id: int,
+        exercise_desc_id: Optional[int] = None,
         status: Optional[str] = None,
         properties: Optional[dict] = None,
         session: AsyncSession = None
@@ -256,6 +257,8 @@ class GymRepository(BaseRepository):
             task.status = status
         if properties:
             task.properties = properties
+        if exercise_desc_id:
+            task.exercise_desc_id = exercise_desc_id
         
         task.update_dttm = datetime.utcnow()
         await session.commit()

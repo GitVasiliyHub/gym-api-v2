@@ -62,6 +62,7 @@ class TaskWithExercise(BaseModel):
     create_dttm: datetime
     update_dttm: Optional[datetime]
     exercise_desc: ExerciseDescSimple
+    properties: dict
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -78,5 +79,6 @@ class TaskGroupWithTasks(BaseModel):
     
 class TaskUpdate(BaseModel):
     exercise_desc_id: Optional[int]
+    status: Optional[str] = 'running'
     properties: Optional[Dict]
     
