@@ -108,7 +108,7 @@ class TaskGroup(Base):
     )
 
     task_group_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    status: Mapped[str] = mapped_column(String(15), server_default=text("'planed'::character varying"))
+    status: Mapped[str] = mapped_column(String(15), server_default=text("'planned'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     master_id: Mapped[Optional[int]] = mapped_column(Integer)
     gymer_id: Mapped[Optional[int]] = mapped_column(Integer)
@@ -148,7 +148,7 @@ class Task(Base):
     )
 
     task_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    status: Mapped[str] = mapped_column(String(15), server_default=text("'planed'::character varying"))
+    status: Mapped[str] = mapped_column(String(15), server_default=text("'planned'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     task_group_id: Mapped[Optional[int]] = mapped_column(Integer)
     exercise_desc_id: Mapped[Optional[int]] = mapped_column(Integer)

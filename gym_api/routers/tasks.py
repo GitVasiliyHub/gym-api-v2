@@ -6,9 +6,12 @@ from fastapi import APIRouter, Path, Query, HTTPException, Body
 
 from ..repositories.gym import GymRepository
 from ..schemas.task import (
-    Task, 
-    TaskCreate,  
+    Task,
+    TaskGroup,
+    TaskCreate,
     TaskUpdate,
+    TaskProperties,
+    TaskGroupStatus,
     TaskGroupWithTasks
 )
 
@@ -41,19 +44,23 @@ async def create_task(
     return await GymRepository.create_task(
         task_group_id=task.task_group_id,
         exercise_desc_id=task.exercise_desc_id,
-        properties=task.properties
+        properties=TaskProperties().model_dump()
     )
 
 
 @router.put(
-    "/{task_id}",
-    summary='Updating task by task_id',
+    "/{task_id}/master_id",
+    summary='Master updating task by task_id',
     response_model=Task
 )
-async def update_task(
+async def master_update_task(
     task_id: int = Path(
         ...,
         description='task_id'
+    ),
+    master_id: int = Query(
+        ...,
+        description='master_id'
     ),
     task_update: TaskUpdate = Body(
         ...,
@@ -62,15 +69,79 @@ async def update_task(
     # current_master: dict = Depends(get_current_master)
 ):
     # Проверяем принадлежность задачи мастеру
-
+    
+    task = await GymRepository.get_task_group_by_task_id(task_id)
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+ 
+    task_group_status = task.task_group.status
+    
+    if task_group_status != 'planned':
+         raise HTTPException(
+             status_code=403,
+             detail=f"Task can't update, task_group_stasus {task_group_status}"
+        )
+        
     updated_task = await GymRepository.update_task(
         task_id=task_id,
         exercise_desc_id=task_update.exercise_desc_id,
-        status=task_update.status,
-        properties=task_update.properties
+        properties=task_update.properties.model_dump()
     )
     if not updated_task:
         raise HTTPException(status_code=404, detail="Task not found")
+    return updated_task
+
+
+@router.put(
+    "/{task_id}/gymer_id",
+    summary='Gymer updating task by task_id',
+    response_model=Task
+)
+async def gymer_update_task(
+    task_id: int = Path(
+        ...,
+        description='task_id'
+    ),
+    gymer_id: int = Query(
+        ...,
+        description='gymer_id'
+    ),
+    task_update: TaskUpdate = Body(
+        ...,
+        description='Параметры обновлния'
+    ),
+    # current_master: dict = Depends(get_current_master)
+):
+    # Проверяем принадлежность задачи gymer
+   
+    task = await GymRepository.get_task_group_by_task_id(task_id)
+    
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+ 
+    task_group = TaskGroup.model_validate(task.task_group)
+    
+    if task_group.status not in (TaskGroupStatus.planned, TaskGroupStatus.running):
+         raise HTTPException(
+             status_code=403,
+             detail="Task can't update, task_group_stasus {task_group.status}"
+        )
+  
+    updated_task = await GymRepository.update_task(
+        task_id=task_id,
+        exercise_desc_id=task_update.exercise_desc_id,
+        properties=task_update.properties.model_dump()
+    )
+        
+    if not updated_task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    if task_group.status == TaskGroupStatus.planned:
+        await GymRepository.update_task_group_status(
+            task_group_id=task_group.task_group_id,
+            status=TaskGroupStatus.running
+        )
     return updated_task
 
 

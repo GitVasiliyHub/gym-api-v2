@@ -1,8 +1,21 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field, ConfigDict
 
+class TaskGroupStatus(str, Enum):
+    planned = 'planned'
+    running = 'running'
+    finished = 'finished'
+
+class TaskProperties(BaseModel):
+    max_weight: Optional[int] = Field(default=None)
+    min_weight: Optional[int] = Field(default=None)
+    rest: Optional[int] = Field(default=None)
+    repeats: Optional[int] = Field(default=None)
+    sets: Optional[int] = Field(default=None)
+    
 
 class TaskGroupBase(BaseModel):
     master_id: int
@@ -19,15 +32,13 @@ class TaskGroup(TaskGroupBase):
     update_dttm: Optional[datetime]
     start_dttm: Optional[datetime]
     num: Optional[int]
-    status: str
+    status: TaskGroupStatus
     
     model_config = ConfigDict(from_attributes=True)
 
 class TaskBase(BaseModel):
     task_group_id: int
     exercise_desc_id: int
-    properties: dict
-    status: str = 'planned'
 
 class TaskCreate(TaskBase):
     pass
@@ -36,6 +47,7 @@ class Task(TaskBase):
     task_id: int
     create_dttm: datetime
     update_dttm: Optional[datetime]
+    properties: TaskProperties
     
     model_config = ConfigDict(from_attributes=True)
 
@@ -58,17 +70,16 @@ class ExerciseDescSimple(BaseModel):
 
 class TaskWithExercise(BaseModel):
     task_id: int
-    status: str
     create_dttm: datetime
     update_dttm: Optional[datetime]
     exercise_desc: ExerciseDescSimple
-    properties: dict
+    properties: TaskProperties
 
     model_config = ConfigDict(from_attributes=True)
 
 class TaskGroupWithTasks(BaseModel):
     task_group_id: int
-    status: str
+    status: TaskGroupStatus
     create_dttm: datetime
     update_dttm: Optional[datetime]
     num: Optional[int]
@@ -78,7 +89,6 @@ class TaskGroupWithTasks(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     
 class TaskUpdate(BaseModel):
-    exercise_desc_id: Optional[int]
-    status: Optional[str] = 'running'
-    properties: Optional[Dict]
+    exercise_desc_id: Optional[int] = Field(None)
+    properties: Optional[TaskProperties] = Field(default_factory=TaskProperties)
     
