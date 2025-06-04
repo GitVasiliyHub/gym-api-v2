@@ -40,8 +40,6 @@ class TaskBase(BaseModel):
     task_group_id: int
     exercise_desc_id: int
 
-class TaskCreate(TaskBase):
-    pass
 
 class Task(TaskBase):
     task_id: int
@@ -91,4 +89,7 @@ class TaskGroupWithTasks(BaseModel):
 class TaskUpdate(BaseModel):
     exercise_desc_id: Optional[int] = Field(None)
     properties: Optional[TaskProperties] = Field(default_factory=TaskProperties)
-    
+
+
+class TaskCreate(TaskBase):
+    properties: Optional[TaskProperties] = Field(default_factory=TaskProperties)

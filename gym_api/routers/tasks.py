@@ -29,7 +29,7 @@ async def create_task(
     task: TaskCreate = Body(
         ...,
         description='Параметры создания task'
-    )
+    ),
     # current_master: dict = Depends(get_current_master)
 ):
 
@@ -44,7 +44,7 @@ async def create_task(
     return await GymRepository.create_task(
         task_group_id=task.task_group_id,
         exercise_desc_id=task.exercise_desc_id,
-        properties=TaskProperties().model_dump()
+        properties=task.properties.model_dump()
     )
 
 
