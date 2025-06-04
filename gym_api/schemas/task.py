@@ -8,6 +8,10 @@ class TaskGroupStatus(str, Enum):
     planned = 'planned'
     running = 'running'
     finished = 'finished'
+    
+class Value(BaseModel):
+    num_set: Optional[int] = Field(default=None)
+    value: Optional[int] = Field(default=None)
 
 class TaskProperties(BaseModel):
     max_weight: Optional[int] = Field(default=None)
@@ -15,6 +19,7 @@ class TaskProperties(BaseModel):
     rest: Optional[int] = Field(default=None)
     repeats: Optional[int] = Field(default=None)
     sets: Optional[int] = Field(default=None)
+    values: List[Value] = Field(default=list)
     
 
 class TaskGroupBase(BaseModel):
