@@ -446,6 +446,8 @@ class GymRepository(BaseRepository):
         task_group.status = status.value
         
         task_group.update_dttm = datetime.utcnow()
+        if status == TaskGroupStatus.running:
+            task_group.start_dttm = datetime.utcnow()
         await session.commit()
         await session.refresh(task_group)
         return task_group  
