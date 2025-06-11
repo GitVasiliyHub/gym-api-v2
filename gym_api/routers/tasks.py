@@ -12,7 +12,8 @@ from ..schemas.task import (
     TaskUpdate,
     TaskProperties,
     TaskGroupStatus,
-    TaskGroupWithTasks
+    TaskGroupWithTasks,
+    TaskWithExercise
 )
 
 
@@ -171,3 +172,20 @@ async def get_master_task_groups_with_tasks(
         limit=limit,
         offset=offset
     )
+
+@router.get(
+    "/{task_id}",
+    summary='Getting task by task_id',
+    response_model=TaskWithExercise
+    )
+async def get_task_by_task_id(
+        task_id: int = Path(
+        ...,
+        description='task_id'
+    )
+):
+    task = await GymRepository.get_task_by_id(task_id=task_id)
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+    
+    return task

@@ -451,3 +451,20 @@ class GymRepository(BaseRepository):
         await session.commit()
         await session.refresh(task_group)
         return task_group  
+    
+    @classmethod
+    @_session_provider   
+    async def get_task_by_id(
+        cls,
+        task_id: int,
+        session: AsyncSession = None
+    ):
+        t = model.Task
+        stmt = select(t).where(t.task_id == task_id).options(
+                        joinedload(model.Task.exercise_desc)
+            .joinedload(model.ExerciseDesc.exercise)
+        )
+                     
+        result = await session.execute(stmt)
+
+        return result.scalars().unique().first()
