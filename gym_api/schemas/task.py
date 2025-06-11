@@ -19,7 +19,8 @@ class TaskProperties(BaseModel):
     rest: Optional[int] = Field(default=None)
     repeats: Optional[int] = Field(default=None)
     sets: Optional[int] = Field(default=None)
-    values: List[Value] = Field(default=list)
+
+    values: List[Value] = Field(default_factory=list)
     
 
 class TaskGroupBase(BaseModel):
