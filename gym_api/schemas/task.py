@@ -4,6 +4,15 @@ from typing import Optional, List, Dict
 
 from pydantic import BaseModel, Field, ConfigDict
 
+
+class TaskGroupOrderIndex(BaseModel):
+    task_group_id: int
+    order_idx: int
+    
+class TaskOrderIndex(BaseModel):
+    task_id: int
+    order_idx: int
+    
 class TaskGroupStatus(str, Enum):
     planned = 'planned'
     running = 'running'
@@ -39,12 +48,14 @@ class TaskGroup(TaskGroupBase):
     start_dttm: Optional[datetime]
     num: Optional[int]
     status: TaskGroupStatus
+    order_index: Optional[int]
     
     model_config = ConfigDict(from_attributes=True)
 
 class TaskBase(BaseModel):
     task_group_id: int
     exercise_desc_id: int
+    order_index: Optional[int]
 
 
 class Task(TaskBase):

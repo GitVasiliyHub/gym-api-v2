@@ -1,10 +1,18 @@
 from typing import Optional
 
 from typing import List
-from fastapi import APIRouter, Path, Query, HTTPException, Body
+from fastapi import (
+    APIRouter, Path, Query, HTTPException, Body, status, Response
+)
 
 from ..repositories.gym import GymRepository
-from ..schemas.task import TaskGroup, TaskGroupCreate, TaskGroupStatus, TaskGroupWithTasks
+from ..schemas.task import (
+    TaskGroup, 
+    TaskGroupCreate, 
+    TaskGroupStatus, 
+    TaskGroupWithTasks,
+    TaskGroupOrderIndex
+)
 
 
 router = APIRouter(prefix='/task_group')
@@ -87,4 +95,17 @@ async def copy_task_group(
     return await GymRepository.copy_task_group(
         task_group_id=task_group_id
     )
+    
+    
+@router.put(
+    "/reorder",
+    summary='Change order position task_group',
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def reorder_task_group(
+    ordered_ids: List[TaskGroupOrderIndex]
+):
+    await GymRepository.reorder_task_group(ordered_ids)
+    
+    return Response(status_code=200)
     

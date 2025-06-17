@@ -115,7 +115,7 @@ class TaskGroup(Base):
     properties: Mapped[Optional[dict]] = mapped_column(JSONB)
     update_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     start_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    num: Mapped[Optional[int]] = mapped_column(Integer)
+    order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
     gymer: Mapped[Optional['Gymer']] = relationship('Gymer', back_populates='task_group')
     master: Mapped[Optional['Master']] = relationship('Master', back_populates='task_group')
@@ -154,6 +154,7 @@ class Task(Base):
     exercise_desc_id: Mapped[Optional[int]] = mapped_column(Integer)
     properties: Mapped[Optional[dict]] = mapped_column(JSONB)
     update_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
     exercise_desc: Mapped[Optional['ExerciseDesc']] = relationship('ExerciseDesc', back_populates='task')
     task_group: Mapped[Optional['TaskGroup']] = relationship('TaskGroup', back_populates='task')

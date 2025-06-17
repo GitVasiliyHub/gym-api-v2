@@ -2,7 +2,9 @@ import json
 from typing import Optional
 
 from typing import List
-from fastapi import APIRouter, Path, Query, HTTPException, Body
+from fastapi import (
+    APIRouter, Path, Query, HTTPException, Body, status, Response
+)
 
 from ..repositories.gym import GymRepository
 from ..schemas.task import (
@@ -13,7 +15,8 @@ from ..schemas.task import (
     TaskProperties,
     TaskGroupStatus,
     TaskGroupWithTasks,
-    TaskWithExercise
+    TaskWithExercise,
+    TaskOrderIndex
 )
 
 
@@ -189,3 +192,16 @@ async def get_task_by_task_id(
         raise HTTPException(status_code=404, detail="Task not found")
     
     return task
+
+
+@router.put(
+    "/reorder",
+    summary='Change order position task',
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def reorder_task(
+    ordered_ids: List[TaskOrderIndex]
+):
+    await GymRepository.reorder_task(ordered_ids)
+    
+    return Response(status_code=200)
