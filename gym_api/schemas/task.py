@@ -46,16 +46,15 @@ class TaskGroup(TaskGroupBase):
     create_dttm: datetime
     update_dttm: Optional[datetime]
     start_dttm: Optional[datetime]
-    num: Optional[int]
     status: TaskGroupStatus
-    order_index: Optional[int]
+    order_idx: Optional[int]
     
     model_config = ConfigDict(from_attributes=True)
 
 class TaskBase(BaseModel):
     task_group_id: int
     exercise_desc_id: int
-    order_index: Optional[int]
+    order_idx: Optional[int]
 
 
 class Task(TaskBase):
@@ -97,7 +96,6 @@ class TaskGroupWithTasks(BaseModel):
     status: TaskGroupStatus
     create_dttm: datetime
     update_dttm: Optional[datetime]
-    num: Optional[int]
     start_dttm: Optional[datetime]
     task: List[TaskWithExercise]
 

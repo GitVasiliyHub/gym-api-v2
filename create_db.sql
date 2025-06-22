@@ -45,6 +45,25 @@ create table gym.exercise_desc (
 	description text not null
 );
 
+
+create table gym.card (
+	card_id serial primary key,
+	master_id int references gym.master(master_id),
+	create_dttm timestamptz not null,
+	update_dttm timestamptz,
+	status varchar(15) not null default 'active',
+	title varchar(45)
+);
+
+create table gym.link (
+	link_id serial primary key,
+	card_id int references gym.card(card_id),
+	link TEXT NOT NULL,
+	title text,
+	create_dttm timestamptz not null,
+	status varchar(15) not null default 'active'
+);
+
 create table gym.task_group (
 	task_group_id serial primary key,
 	master_id int REFERENCES gym.master(master_id),
@@ -54,7 +73,7 @@ create table gym.task_group (
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz,
 	start_dttm timestamptz,
-	num int
+	order_idx int
 );
 
 create table gym.task (
@@ -64,7 +83,18 @@ create table gym.task (
 	properties jsonb,
 	status varchar(15) not null default 'planed',
 	create_dttm timestamptz not null default now(),
-	update_dttm timestamptz
+	update_dttm timestamptz,
+	order_idx int
+);
+
+create table gym.card (
+	card_id serial primary key,
+	master_id int REFERENCES gym.master(master_id),
+	create_dttm timestamptz not null default now(),
+	status varchar(15) not null default 'active',
+	update_dttm timestamptz,
+	exercise_desc_id int references gym.exercise_desc(exercise_desc_id),
+
 );
 
 
