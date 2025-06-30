@@ -9,6 +9,8 @@ class MastersGymer(BaseModel):
     photo: Optional[str] = None
     gymer_id: int
     
+    model_config = ConfigDict(from_attributes=True)
+    
 
 class Gymer(BaseModel):
     gymer_id: int

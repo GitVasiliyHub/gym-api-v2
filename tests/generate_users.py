@@ -20,7 +20,7 @@ amvera_db = dict(
     host='gym-db-didvasiliy.db-msk0.amvera.tech',
     port=5432
 )
-conn = psycopg2.connect(**amvera_db)
+conn = psycopg2.connect(**local_db)
 cursor = conn.cursor()
 
 def execute_ddl():
@@ -130,21 +130,32 @@ EXERCISE = [
 ]
 
 def insert_exercise(exercises, master_id=1):
+    ex_desc = {}
     for _ in exercises:
         # Вставка в таблицу exercise
         cursor.execute("""
-            INSERT INTO gym.exercise (master_id, title)
-            VALUES (%s, %s ) RETURNING exercise_id;
-        """, (master_id, _[0]))
+            INSERT INTO gym.exercise (title)
+            VALUES (%s) RETURNING exercise_id;
+        """, (_[0],))
         exercise_id = cursor.fetchone()[0]
         
+        if _[1] in ex_desc:
+            exercise_desc_id = ex_desc[_[1]]
+        else:
+            cursor.execute("""
+                INSERT INTO gym.exercise_desc (title)
+                VALUES (%s) RETURNING exercise_desc_id;
+            """, (_[1],))
+            exercise_desc_id = cursor.fetchone()[0]
+            ex_desc[_[1]] = exercise_desc_id
+        
         cursor.execute("""
-            INSERT INTO gym.exercise_desc (exercise_id, description)
-            VALUES (%s, %s );
-        """, (exercise_id, _[1]))
+                INSERT INTO gym.card (master_id, exercise_id, exercise_desc_id, create_dttm, status)
+                VALUES (1, %s, %s, now(), 'active');
+        """, (exercise_id, exercise_desc_id))
 
 #создаем таблицы
-execute_ddl()
+#execute_ddl()
 
 # Вставляем мастеров и получаем их master_id
 master2_id, master3_id = insert_masters()

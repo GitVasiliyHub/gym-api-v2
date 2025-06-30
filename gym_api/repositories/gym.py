@@ -22,143 +22,14 @@ from ..schemas.task import (
 from ..schemas.user import MastersGymer, User, UserIn, UserBase
 
 
-class Res(BaseModel):
-    username: str
-    gymer_id: int
-    
-    model_config = ConfigDict(from_attributes=True)
-
 _session_provider = SessionProvider(
     async_mode=True,
     engine_settings={'pool_pre_ping': True},
     db_settings=db
 )
 
-class GymRepository(BaseRepository):
-    @classmethod
-    @_session_provider
-    async def add_user_for_master(
-        cls,
-        master_id: int,
-        gymer_id: int,
-        session: AsyncSession=None
-    ):
-        mg = model.MasterGym(
-            master_id=master_id,
-            gymer_id=gymer_id,
-            create_dttm=datetime.now()
-        )
-        session.add(mg)
-        await session.commit()
-        await session.refresh(mg)
-        return mg  
-    
-    @classmethod
-    @_session_provider
-    async def select_user_data(
-        cls,
-        telegram_id: int,
-        session: AsyncSession=None
-    ):
-        user_stmt = (
-            select(model.User)
-            .where(model.User.telegram_id == telegram_id)
-        )
-        user = await session.execute(user_stmt)
-        user = user.scalars().first()
-        if not user:
-            return
-        master_stmt = (
-            select(model.Master)
-            .where(model.Master.user_id == user.user_id)
-        )
-        master = await session.execute(master_stmt)
-        master = master.scalars().first()
-        
-        gymer_stmt = (
-            select(model.Gymer)
-            .where(model.Gymer.user_id == user.user_id)
-        )
-        gymer = await session.execute(gymer_stmt)
-        gymer = gymer.scalars().first() 
+class GymRepository(BaseRepository):    
 
-        return User(
-                user_id=user.user_id,
-                username=user.username,
-                phone=user.phone,
-                first_name=user.first_name,
-                last_name=user.last_name,
-                email=user.email,
-                telegram_id=user.telegram_id,
-                photo=None,
-                master=master,
-                gymer=gymer
-        )
-
-    @classmethod
-    @_session_provider
-    async def add_user(
-        cls,
-        user_data: UserIn,
-        session: AsyncSession=None
-    ):
-        user = model.User(**user_data.model_dump())
-        session.add(user)
-        await session.flush()
-        u = UserBase.model_validate(user)
-        
-        master = model.Master(user_id=u.user_id, create_dttm=datetime.now())
-        gymer = model.Gymer(user_id=u.user_id, create_dttm=datetime.now())
-        session.add(master)
-        session.add(gymer)
-        
-        await session.commit()
-        await session.refresh(master)
-        await session.refresh(gymer)
-        
-        await cls.add_user_for_master(
-            master_id=master.master_id,
-            gymer_id=gymer.gymer_id,
-            session=session
-        )
-        
-        return await cls.select_user_data(
-            telegram_id=u.telegram_id,
-            session=session
-        )
-        
-    
-    @classmethod
-    @_session_provider
-    async def select_master_gymers_data(
-        cls,
-        master_id: int,
-        session: AsyncSession=None
-    ):
-        mg = model.MasterGym
-        g = model.Gymer
-        u = model.User
-        
-        sub = select(mg.gymer_id).where(
-            mg.master_id == master_id,
-            mg.close_dttm.is_(None)
-            )
-        
-        statement = select(
-            u.username,
-            u.photo,
-            g.gymer_id
-        ).join(
-            g, g.user_id == u.user_id
-        ).where(g.gymer_id.in_(sub))
-        
-        rows = await session.execute(statement)
-
-        result = []
-        for row in rows:
-            result.append(Res.model_validate(row))
-        
-        return result
     
     @classmethod
     @_session_provider
