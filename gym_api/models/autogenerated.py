@@ -168,17 +168,18 @@ class TaskGroup(Base):
     master: Mapped[Optional['Master']] = relationship('Master', back_populates='task_group')
     task: Mapped[List['Task']] = relationship('Task', back_populates='task_group')
 
+class LinkCard(Base):
+    __tablename__ = 'link_card'
+    __table_args__ = (
+        ForeignKeyConstraint(['card_id'], ['gym.card.card_id'], name='link_card_card_id_fkey'),
+        ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_card_link_id_fkey'),
+        {'schema': 'gym'}
+    )
 
-t_link_card = Table(
-    'link_card', Base.metadata,
-    Column('link_id', Integer),
-    Column('card_id', Integer),
-    Column('create_dttm', DateTime(True), nullable=False),
-    Column('close_dttm', DateTime(True)),
-    ForeignKeyConstraint(['card_id'], ['gym.card.card_id'], name='link_card_card_id_fkey'),
-    ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_card_link_id_fkey'),
-    schema='gym'
-)
+    link_id: Mapped[int] = mapped_column(Integer)
+    card_id: Mapped[int] = mapped_column(Integer)
+    create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
+    close_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
 
 
 class Task(Base):

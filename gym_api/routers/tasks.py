@@ -7,6 +7,7 @@ from fastapi import (
 )
 
 from ..repositories.gym import GymRepository
+from ..repositories.repo_task import TaskRepository
 from ..schemas.task import (
     Task,
     TaskGroup,
@@ -21,6 +22,23 @@ from ..schemas.task import (
 
 
 router = APIRouter(prefix='/task')
+
+
+@router.get(
+    "/{task_group_id}/tasks",
+    summary='Getting a list of task by task_group_id',
+    response_model=List[Task]
+)
+async def get_tasks_with_exercise_by_group(
+    task_group_id: int = Path(
+        ...,
+        description='task_group id'
+    )
+):
+    tasks = await TaskRepository.get_tasks_by_group(task_group_id)
+    if not tasks:
+        raise HTTPException(status_code=404, detail="Tasks not found")
+    return tasks
 
 
 

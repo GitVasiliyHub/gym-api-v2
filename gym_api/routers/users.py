@@ -3,7 +3,7 @@ from fastapi import APIRouter, Path, HTTPException, Body, Query
 
 
 from ..schemas import user as user_schema
-from ..repositories.user import UserRepository
+from ..repositories.repo_user import UserRepository
 
 
 router = APIRouter(prefix='/user')
