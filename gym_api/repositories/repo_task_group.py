@@ -7,8 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..database.postgres.base import SessionProvider
 from ..config import db
-from ..managers import manager_card as card_manager
-from ..schemas import user as user_schema
+from ..managers import manager_task_group
 
 
 
@@ -18,17 +17,16 @@ _session_provider = SessionProvider(
     db_settings=db
 )
 
-class CardRepository(BaseRepository):
+class TaskGroupRepository(BaseRepository):
     @classmethod
     @_session_provider
-    async def get_tasks_by_group(
+    async def get_task_group(
             cls,
             task_group_id: int,
             session: AsyncSession = None
     ):
-        t = model.Task
-        stmt = select(t).where(t.task_group_id == task_group_id)
-
-        result = await session.execute(stmt)
-
-        return result.scalars().all()
+        manager = manager_task_group.TaskGroupManager
+        return await manager.get_scalar_by_where(
+            where_exp=[manager.model.task_group_id == task_group_id],
+            session=session
+        )

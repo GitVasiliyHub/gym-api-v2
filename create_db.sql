@@ -34,26 +34,15 @@ create table gym.master_gym (
 	close_dttm timestamptz
 );
 
+
 create table gym.exercise (
 	exercise_id serial primary key,
-	title text not null
-);
-
-create table gym.exercise_desc (
-	exercise_desc_id serial primary key,
-	title text not null
-);
-
-
-create table gym.card (
-	card_id serial primary key,
 	master_id int references gym.master(master_id),
-	exercise_id int references gym.exercise(exercise_id),
-	exercise_desc_id int references gym.exercise_desc(exercise_desc_id),
+	exercise_name text,
+	description text,
 	create_dttm timestamptz not null,
 	update_dttm timestamptz,
-	status varchar(15) not null default 'active',
-	title varchar(45)
+	status varchar(15) not null default 'active'
 );
 
 create table gym.link (
@@ -64,9 +53,9 @@ create table gym.link (
 	close_dttm timestamptz
 );
 
-create table gym.link_card (
+create table gym.link_exercise (
 	link_id int references gym.link(link_id),
-	card_id int references gym.card(card_id),
+	exercise_id int references gym.exercise(exercise_id),
 	create_dttm timestamptz not null,
 	close_dttm timestamptz
 );
@@ -85,7 +74,7 @@ create table gym.task_group (
 create table gym.task (
 	task_id serial primary key,
 	task_group_id int references gym.task_group(task_group_id),
-	card_id int references gym.card(card_id),
+	exercise_id int references gym.exercise(exercise_id),
 	status varchar(15) not null default 'planed',
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz,
@@ -110,9 +99,10 @@ create table gym.set (
 );
 
 
+
 -- SELECT setval(
---     pg_get_serial_sequence('master', 'master_id'), 
---     COALESCE((SELECT MAX(master_id) FROM master), 0) + 1, 
+--     pg_get_serial_sequence('master', 'master_id'),
+--     COALESCE((SELECT MAX(master_id) FROM master), 0) + 1,
 --     false
 -- );
 

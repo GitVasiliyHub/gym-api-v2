@@ -9,32 +9,6 @@ class Base(DeclarativeBase):
     pass
 
 
-class Exercise(Base):
-    __tablename__ = 'exercise'
-    __table_args__ = (
-        PrimaryKeyConstraint('exercise_id', name='exercise_pkey'),
-        {'schema': 'gym'}
-    )
-
-    exercise_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text)
-
-    card: Mapped[List['Card']] = relationship('Card', back_populates='exercise')
-
-
-class ExerciseDesc(Base):
-    __tablename__ = 'exercise_desc'
-    __table_args__ = (
-        PrimaryKeyConstraint('exercise_desc_id', name='exercise_desc_pkey'),
-        {'schema': 'gym'}
-    )
-
-    exercise_desc_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    title: Mapped[str] = mapped_column(Text)
-
-    card: Mapped[List['Card']] = relationship('Card', back_populates='exercise_desc')
-
-
 class Link(Base):
     __tablename__ = 'link'
     __table_args__ = (
@@ -103,33 +77,28 @@ class Master(Base):
     is_active: Mapped[Optional[bool]] = mapped_column(Boolean, server_default=text('true'))
 
     user: Mapped[Optional['User']] = relationship('User', back_populates='master')
-    card: Mapped[List['Card']] = relationship('Card', back_populates='master')
+    exercise: Mapped[List['Exercise']] = relationship('Exercise', back_populates='master')
     task_group: Mapped[List['TaskGroup']] = relationship('TaskGroup', back_populates='master')
 
 
-class Card(Base):
-    __tablename__ = 'card'
+class Exercise(Base):
+    __tablename__ = 'exercise'
     __table_args__ = (
-        ForeignKeyConstraint(['exercise_desc_id'], ['gym.exercise_desc.exercise_desc_id'], name='card_exercise_desc_id_fkey'),
-        ForeignKeyConstraint(['exercise_id'], ['gym.exercise.exercise_id'], name='card_exercise_id_fkey'),
-        ForeignKeyConstraint(['master_id'], ['gym.master.master_id'], name='card_master_id_fkey'),
-        PrimaryKeyConstraint('card_id', name='card_pkey'),
+        ForeignKeyConstraint(['master_id'], ['gym.master.master_id'], name='exercise_master_id_fkey'),
+        PrimaryKeyConstraint('exercise_id', name='exercise_pkey'),
         {'schema': 'gym'}
     )
 
-    card_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    exercise_id: Mapped[int] = mapped_column(Integer, primary_key=True)
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
     status: Mapped[str] = mapped_column(String(15), server_default=text("'active'::character varying"))
     master_id: Mapped[Optional[int]] = mapped_column(Integer)
-    exercise_id: Mapped[Optional[int]] = mapped_column(Integer)
-    exercise_desc_id: Mapped[Optional[int]] = mapped_column(Integer)
+    exercise_name: Mapped[Optional[str]] = mapped_column(Text)
+    description: Mapped[Optional[str]] = mapped_column(Text)
     update_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
-    title: Mapped[Optional[str]] = mapped_column(String(45))
 
-    exercise_desc: Mapped[Optional['ExerciseDesc']] = relationship('ExerciseDesc', back_populates='card')
-    exercise: Mapped[Optional['Exercise']] = relationship('Exercise', back_populates='card')
-    master: Mapped[Optional['Master']] = relationship('Master', back_populates='card')
-    task: Mapped[List['Task']] = relationship('Task', back_populates='card')
+    master: Mapped[Optional['Master']] = relationship('Master', back_populates='exercise')
+    task: Mapped[List['Task']] = relationship('Task', back_populates='exercise')
 
 
 class MasterGym(Base):
@@ -137,7 +106,7 @@ class MasterGym(Base):
     __table_args__ = (
         PrimaryKeyConstraint('master_id', 'gymer_id', 'create_dttm'),
         ForeignKeyConstraint(['gymer_id'], ['gym.gymer.gymer_id'], name='master_gym_gymer_id_fkey'),
-        ForeignKeyConstraint(['master_id'], ['gym.master.master_id'], name='master_gym_master_id_fkey'),    
+        ForeignKeyConstraint(['master_id'], ['gym.master.master_id'], name='master_gym_master_id_fkey'),
         {'schema': 'gym'}
     )
     master_id: Mapped[int] = mapped_column(Integer)
@@ -168,16 +137,16 @@ class TaskGroup(Base):
     master: Mapped[Optional['Master']] = relationship('Master', back_populates='task_group')
     task: Mapped[List['Task']] = relationship('Task', back_populates='task_group')
 
-class LinkCard(Base):
-    __tablename__ = 'link_card'
+class LinkExercise(Base):
+    __tablename__ = 'link_exercise'
     __table_args__ = (
-        ForeignKeyConstraint(['card_id'], ['gym.card.card_id'], name='link_card_card_id_fkey'),
-        ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_card_link_id_fkey'),
+        ForeignKeyConstraint(['exercise_id'], ['gym.exercise.exercise_id'], name='link_exercise_exercise_id_fkey'),
+        ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_exercise_link_id_fkey'),
         {'schema': 'gym'}
     )
 
     link_id: Mapped[int] = mapped_column(Integer)
-    card_id: Mapped[int] = mapped_column(Integer)
+    exercise_id: Mapped[int] = mapped_column(Integer)
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
     close_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
 
@@ -185,7 +154,7 @@ class LinkCard(Base):
 class Task(Base):
     __tablename__ = 'task'
     __table_args__ = (
-        ForeignKeyConstraint(['card_id'], ['gym.card.card_id'], name='task_card_id_fkey'),
+        ForeignKeyConstraint(['exercise_id'], ['gym.exercise.exercise_id'], name='task_exercise_id_fkey'),
         ForeignKeyConstraint(['task_group_id'], ['gym.task_group.task_group_id'], name='task_task_group_id_fkey'),
         PrimaryKeyConstraint('task_id', name='task_pkey'),
         {'schema': 'gym'}
@@ -195,11 +164,11 @@ class Task(Base):
     status: Mapped[str] = mapped_column(String(15), server_default=text("'planed'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     task_group_id: Mapped[Optional[int]] = mapped_column(Integer)
-    card_id: Mapped[Optional[int]] = mapped_column(Integer)
+    exercise_id: Mapped[Optional[int]] = mapped_column(Integer)
     update_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
-    card: Mapped[Optional['Card']] = relationship('Card', back_populates='task')
+    exercise: Mapped[Optional['Exercise']] = relationship('Exercise', back_populates='task')
     task_group: Mapped[Optional['TaskGroup']] = relationship('TaskGroup', back_populates='task')
     task_properties: Mapped[List['TaskProperties']] = relationship('TaskProperties', back_populates='task')
 

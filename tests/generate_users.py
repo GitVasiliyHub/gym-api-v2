@@ -130,29 +130,13 @@ EXERCISE = [
 ]
 
 def insert_exercise(exercises, master_id=1):
-    ex_desc = {}
-    for _ in exercises:
+    for i in exercises:
         # Вставка в таблицу exercise
         cursor.execute("""
-            INSERT INTO gym.exercise (title)
-            VALUES (%s) RETURNING exercise_id;
-        """, (_[0],))
-        exercise_id = cursor.fetchone()[0]
-        
-        if _[1] in ex_desc:
-            exercise_desc_id = ex_desc[_[1]]
-        else:
-            cursor.execute("""
-                INSERT INTO gym.exercise_desc (title)
-                VALUES (%s) RETURNING exercise_desc_id;
-            """, (_[1],))
-            exercise_desc_id = cursor.fetchone()[0]
-            ex_desc[_[1]] = exercise_desc_id
-        
-        cursor.execute("""
-                INSERT INTO gym.card (master_id, exercise_id, exercise_desc_id, create_dttm, status)
+                INSERT INTO gym.exercise (master_id, exercise_name, 
+                                          description, create_dttm, status)
                 VALUES (1, %s, %s, now(), 'active');
-        """, (exercise_id, exercise_desc_id))
+        """, (i[0], i[1]))
 
 #создаем таблицы
 #execute_ddl()

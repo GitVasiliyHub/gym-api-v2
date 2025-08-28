@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..database.postgres.base import SessionProvider
 from ..config import db
-from ..managers import manager_task as task_manager
+from ..managers import manager_task
 
 
 
@@ -25,8 +25,21 @@ class TaskRepository(BaseRepository):
             task_group_id: int,
             session: AsyncSession = None
     ):
-        manager = task_manager.TaskManager
+        manager = manager_task.TaskManager
         return await manager.get_all_by_where(
             where_exp=[manager.model.task_group_id == task_group_id],
+            session=session
+        )
+
+    @classmethod
+    @_session_provider
+    async def create_task(
+            cls,
+            task_group_id: int,
+            session: AsyncSession = None
+    ):
+        manager = manager_task.TaskManager
+        return await manager.create(
+            task_group_id=task_group_id,
             session=session
         )

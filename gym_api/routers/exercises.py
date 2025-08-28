@@ -4,16 +4,16 @@ from typing import List
 from fastapi import APIRouter, Path, Query, HTTPException, Body
 
 from ..repositories.repo_exercise import ExerciseRepository
-from ..schemas.schema_exercise import ExerciseDesc, Exercise
+from ..schemas import schema_exercise as se
 
 
 router = APIRouter(prefix='/exercise')
 
 
 @router.get(
-    "/{master_id}/exercises",
+    "/{master_id}",
     summary='Getting a list of exercise by master_id',
-    response_model=List[Exercise]
+    response_model=List[se.Exercise]
 )
 async def get_list_of_exercise(
     master_id: int,
@@ -28,19 +28,49 @@ async def get_list_of_exercise(
     )
 
 
-@router.get(
-    "/{exercise_id}/descriptions",
-    summary='Getting a list of exercise description by exercise_id',
-    response_model=List[ExerciseDesc],
+@router.post(
+    "",
+    summary='Create exercise',
+    response_model=List[se.ExerciseAggregate]
 )
-async def get_list_of_exercise_description(
-    master_id: int,
-    search: Optional[str] = Query(
-        None,
-        description="Поиск по названию описания упражнения"
+async def create_exercise(
+    exercise: se.CreateExercise = Body(
+        description='Exercise data'
     )
 ):
-    return await ExerciseRepository.get_exercises_desc_by_master(
-        master_id=master_id,
-        search=search
+    return await ExerciseRepository.create(exercise=exercise)
+
+
+@router.post(
+    "/copy/{exercise_id}",
+    summary='Copy exercise',
+    response_model=List[se.ExerciseAggregate]
+)
+async def copy_exercise(
+    exercise_id: int = Path(
+        description='exercise id'
     )
+):
+    new_exercise = await ExerciseRepository.copy(exercise_id=exercise_id)
+    if not new_exercise:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+
+    return new_exercise
+
+
+@router.put(
+    "",
+    summary='Update exercise',
+    response_model=List[se.ExerciseAggregate]
+)
+async def update_exercise(
+    exercise: se.Exercise = Body(
+        description='Exercise data'
+    )
+):
+    new_ex = await ExerciseRepository.update(exercise=exercise)
+    if not new_ex:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+
+    return new_ex
+

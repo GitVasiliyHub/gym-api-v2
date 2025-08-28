@@ -13,6 +13,7 @@ class TaskStatus(str, Enum):
 class Task(BaseModel):
     task_id: int
     task_group_id: int
+    card_id: Optional[int]
     status: TaskStatus
     create_dttm: datetime
     update_dttm: Optional[datetime]
@@ -37,3 +38,23 @@ class Set(BaseModel):
     fact_rep: Any
     plan_value: Any
     plan_rep: Any
+
+
+class UpdateTask(BaseModel):
+    task_id: int
+    card_id: int
+    status: Optional[TaskStatus]
+    order_idx: Optional[int]
+
+
+post card {master_id,
+           exercise=int | str,
+           exercise_desc=int | str
+} - > {}
+
+
+
+copy card (card_id)
+
+
+

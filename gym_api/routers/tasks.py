@@ -8,6 +8,8 @@ from fastapi import (
 
 from ..repositories.gym import GymRepository
 from ..repositories.repo_task import TaskRepository
+from ..repositories.repo_task_group import TaskGroupRepository
+from ..schemas import schema_task
 from ..schemas.task import (
     Task,
     TaskGroup,
@@ -45,45 +47,29 @@ async def get_tasks_with_exercise_by_group(
 @router.post(
     "",
     summary='Creating a new task',
-    response_model=Task
+    response_model=schema_task.Task
 )
 async def create_task(
-    task: TaskCreate = Body(
+    task_group_id: int = Query(
         ...,
-        description='Параметры создания task'
-    ),
-    # current_master: dict = Depends(get_current_master)
+        description='task_group_id'
+    )
 ):
-
-    task_group = await GymRepository.get_task_group_by_id(task.task_group_id)
+    task_group = await TaskGroupRepository.get_task_group(task_group_id)
     if not task_group:
-    # if not task_group or task_group.master_id != current_master["master_id"]:
         raise HTTPException(
                 status_code=404,
                 detail="Task group not found or access denied"
             )
-
-    return await GymRepository.create_task(
-        task_group_id=task.task_group_id,
-        exercise_desc_id=task.exercise_desc_id,
-        properties=task.properties.model_dump()
-    )
+    return await TaskRepository.create_task(task_group_id=task_group_id)
 
 
 @router.put(
-    "/{task_id}/master_id",
+    "",
     summary='Master updating task by task_id',
     response_model=Task
 )
 async def master_update_task(
-    task_id: int = Path(
-        ...,
-        description='task_id'
-    ),
-    master_id: int = Query(
-        ...,
-        description='master_id'
-    ),
     task_update: TaskUpdate = Body(
         ...,
         description='Параметры обновлния'
