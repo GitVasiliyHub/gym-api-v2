@@ -8,7 +8,9 @@ from .base import BaseRepository
 from ..database.postgres.base import SessionProvider
 from ..config import db
 from ..managers import manager_exercise as me
+from ..managers import manager_link as ml
 from ..schemas import schema_exercise as se
+from ..schemas import schema_link as sl
 
 
 
@@ -58,17 +60,18 @@ class ExerciseRepository(BaseRepository):
 
         if exercise.link_ids:
             for link_id in exercise.link_ids:
-                await me.LinkExerciseManager.create(
+                await ml.LinkExerciseManager.create(
                     session=session,
                     exercise_id=new_exercise.exercise_id,
                     link_id=link_id
                 )
-            links = await me.LinkManager.get_all_by_where(
+            links = await ml.LinkManager.get_all_by_where(
                 session=session,
-                where_exp=[me.LinkManager.model.link_id.in_(exercise.link_ids)]
+                where_exp=[ml.LinkManager.model.link_id.in_(
+                    exercise.link_ids)]
             )
             new_exercise.links = [
-                se.Link.model_validate(link) for link in links
+                sl.Link.model_validate(link) for link in links
             ]
         return new_exercise
 
@@ -110,9 +113,9 @@ class ExerciseRepository(BaseRepository):
         if not original_ex:
             return None
         original_ex = se.Exercise.model_validate(original_ex)
-        where_exp = [me.LinkExerciseManager.model.exercise_id == exercise_id]
+        where_exp = [ml.LinkExerciseManager.model.exercise_id == exercise_id]
 
-        original_link_ex = await me.LinkExerciseManager.get_all_by_where(
+        original_link_ex = await ml.LinkExerciseManager.get_all_by_where(
             session=session,
             where_exp=where_exp
         )
