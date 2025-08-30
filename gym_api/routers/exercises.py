@@ -27,11 +27,27 @@ async def get_list_of_exercise(
         search=search
     )
 
+@router.get(
+    "/id/{exercise_id}",
+    summary='Get exercise by id',
+    response_model=se.ExerciseAggregate
+)
+async def get_exercise(
+    exercise_id: int = Path(
+        description='exercise id'
+    )
+):
+    exercise = await ExerciseRepository.get_by_id(exercise_id=exercise_id)
+    if not exercise:
+        raise HTTPException(status_code=404, detail="Exercise not found")
+
+    return exercise
+
 
 @router.post(
     "",
     summary='Create exercise',
-    response_model=List[se.ExerciseAggregate]
+    response_model=se.ExerciseAggregate
 )
 async def create_exercise(
     exercise: se.CreateExercise = Body(
@@ -44,7 +60,7 @@ async def create_exercise(
 @router.post(
     "/copy/{exercise_id}",
     summary='Copy exercise',
-    response_model=List[se.ExerciseAggregate]
+    response_model=se.ExerciseAggregate
 )
 async def copy_exercise(
     exercise_id: int = Path(

@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy import select
@@ -44,7 +44,9 @@ class LinkRepository(BaseRepository):
         new_link = await ml.LinkManager.create(
             session=session,
             link=link.link,
-            title=link.title
+            title=link.title,
+            master_id=link.master_id,
+            create_dttm=datetime.utcnow()
         )
         new_link = sl.Link.model_validate(new_link)
 

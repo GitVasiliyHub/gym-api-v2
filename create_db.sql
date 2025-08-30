@@ -52,6 +52,7 @@ create table gym.link (
 	link_id serial primary key,
 	link text not null,
 	title text,
+    master_id int references gym.master(master_id),
 	create_dttm timestamptz not null,
 	close_dttm timestamptz
 );

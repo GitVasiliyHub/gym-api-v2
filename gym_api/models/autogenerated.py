@@ -13,6 +13,9 @@ class Link(Base):
     __tablename__ = 'link'
     __table_args__ = (
         PrimaryKeyConstraint('link_id', name='link_pkey'),
+        ForeignKeyConstraint(['master_id'], ['gym.master.master_id'],
+                             name='link_master_id_fkey'),
+
         {'schema': 'gym'}
     )
 
@@ -21,6 +24,11 @@ class Link(Base):
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
     title: Mapped[Optional[str]] = mapped_column(Text)
     close_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
+    master_id: Mapped[Optional[int]] = mapped_column(Integer)
+    exercises: Mapped[List["Exercise"]] = relationship(
+        secondary="gym.link_exercise",
+        back_populates="links"
+    )
 
 
 class User(Base):
@@ -99,6 +107,11 @@ class Exercise(Base):
 
     master: Mapped[Optional['Master']] = relationship('Master', back_populates='exercise')
     task: Mapped[List['Task']] = relationship('Task', back_populates='exercise')
+    links: Mapped[List["Link"]] = relationship(
+        secondary="gym.link_exercise",
+        back_populates="exercises",
+        lazy="selectin"
+    )
 
 
 class MasterGym(Base):
@@ -140,7 +153,7 @@ class TaskGroup(Base):
 class LinkExercise(Base):
     __tablename__ = 'link_exercise'
     __table_args__ = (
-        PrimaryKeyConstraint('exercise_id', 'link_id', 'close_dttm'),
+        PrimaryKeyConstraint('exercise_id', 'link_id'),
         ForeignKeyConstraint(['exercise_id'], ['gym.exercise.exercise_id'], name='link_exercise_exercise_id_fkey'),
         ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_exercise_link_id_fkey'),
         {'schema': 'gym'}

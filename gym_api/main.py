@@ -6,6 +6,7 @@ from .routers.users import router as user_router
 from .routers.tasks import router as task_router
 from .routers.task_groups import router as tg_router
 from .routers.exercises import router as ex_router
+from .routers.links import router as link_router
 
 
 app = FastAPI(
@@ -31,6 +32,7 @@ app.include_router(router=user_router, prefix='/gym', tags=['user'])
 app.include_router(router=task_router, prefix='/gym', tags=['task'])
 app.include_router(router=tg_router, prefix='/gym', tags=['task_group'])
 app.include_router(router=ex_router, prefix='/gym', tags=['exercise'])
+app.include_router(router=link_router, prefix='/gym', tags=['link'])
 
 def run():
     uvicorn.run(

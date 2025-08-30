@@ -10,12 +10,16 @@ class Manager:
     model: Generic[T]
 
     @classmethod
-    async def create(cls, session: AsyncSession, **kwargs) -> Generic[T]:
+    async def create(
+            cls, session: AsyncSession, commit=True, **kwargs
+    ) -> Generic[T]:
         model = cls.model(**kwargs)
         session.add(model)
-
-        await session.commit()
-        await session.refresh(model)
+        if commit:
+            await session.commit()
+            await session.refresh(model)
+        else:
+            await session.flush()
 
         return model
 

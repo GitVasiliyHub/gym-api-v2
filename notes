@@ -1,10 +1,2 @@
-
-; 2 endpoint copy treaning
-; 3. add to task_group exercises
-; 4. properties
-; wigtn_max/min, setsб repeater, 
-; 5. типизированный статус  planned, running, finished
-; 6. task убрать статус, сделать статус в таск группу и не менять статус такс круппы если меняетс тренер лучше сделать отдельный эт\ндпоинт
-; жимер при изменении пропертиез меняет статус тренировки/ такс группы на ранинг
-7 эндпоинт у таск группы для замены очередности ьренировок
-8 удаление/архивирование
+put/exercise добавить links
+add link to exercise (exercise_id, link_id)

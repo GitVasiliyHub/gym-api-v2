@@ -15,7 +15,7 @@ router = APIRouter(prefix='/link')
 async def get_links_by_id(
         link_ids: List[int] = Query(
             ...,
-            default='List link_ids'
+            description='List link_ids'
         )
 ):
     return await LinkRepository.get_links_by_id(link_ids=link_ids)
@@ -28,7 +28,7 @@ async def get_links_by_id(
 async def create_link(
         link: sl.CreateLink = Body(
             ...,
-            default='Link description'
+            description='Link description'
         )
 ):
     return await LinkRepository.create(link=link)

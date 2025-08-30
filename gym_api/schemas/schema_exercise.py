@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Optional, List
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .schema_link import Link
 
@@ -22,7 +22,9 @@ class Exercise(BaseModel):
 
 
 class ExerciseAggregate(Exercise):
-    links: Optional[List[Link]]
+    links: List[Link] = Field(
+        default_factory=list
+    )
 
     model_config = ConfigDict(from_attributes=True)
 

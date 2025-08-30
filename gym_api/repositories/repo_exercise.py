@@ -1,7 +1,9 @@
 from datetime import datetime
 from typing import Optional, List
 
+from fastapi import HTTPException
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseRepository
@@ -21,6 +23,36 @@ _session_provider = SessionProvider(
 )
 
 class ExerciseRepository(BaseRepository):
+    @classmethod
+    @_session_provider
+    async def get_by_id(
+            cls,
+            exercise_id: int,
+            session: AsyncSession = None
+    ):
+        Exercise = me.ExerciseManager.model
+        Link = ml.LinkManager.model
+        LinkExercise = ml.LinkExerciseManager.model
+
+        stmt = (
+            select(Exercise)
+            .where(Exercise.exercise_id == exercise_id)
+            .options(
+                selectinload(
+                    Exercise.links.and_(
+                        LinkExercise.close_dttm.is_(None),
+                        Link.close_dttm.is_(None)
+                    )
+            )
+            )
+        )
+        result = await session.execute(stmt)
+        exercise = result.scalar_one_or_none()
+
+        if exercise:
+            return se.ExerciseAggregate.model_validate(exercise)
+        return None
+
     @classmethod
     @_session_provider
     async def get_exercises_by_master(
@@ -48,31 +80,47 @@ class ExerciseRepository(BaseRepository):
             exercise: se.CreateExercise,
             session: AsyncSession = None
     ) -> se.ExerciseAggregate:
-        new_exercise = await me.ExerciseManager.create(
-            session=session,
-            master_id=exercise.master_id,
-            exercise_name=exercise.exercise_name,
-            description=exercise.description,
-            create_dttm=datetime.now(),
-            status=se.ExerciseStatus.active
-        )
-        new_exercise = se.ExerciseAggregate.model_validate(new_exercise)
-
-        if exercise.link_ids:
-            for link_id in exercise.link_ids:
-                await ml.LinkExerciseManager.create(
-                    session=session,
-                    exercise_id=new_exercise.exercise_id,
-                    link_id=link_id
-                )
-            links = await ml.LinkManager.get_all_by_where(
+        try:
+            new_exercise = await me.ExerciseManager.create(
                 session=session,
-                where_exp=[ml.LinkManager.model.link_id.in_(
-                    exercise.link_ids)]
+                commit=False,
+                master_id=exercise.master_id,
+                exercise_name=exercise.exercise_name,
+                description=exercise.description,
+                create_dttm=datetime.now(),
+                status=se.ExerciseStatus.active
             )
-            new_exercise.links = [
-                sl.Link.model_validate(link) for link in links
-            ]
+            new_exercise = se.ExerciseAggregate(
+                exercise_id=new_exercise.exercise_id,
+                master_id=exercise.master_id,
+                exercise_name=exercise.exercise_name,
+                description=exercise.description,
+                status=se.ExerciseStatus.active
+            )
+            if exercise.link_ids:
+                for link_id in exercise.link_ids:
+                    await ml.LinkExerciseManager.create(
+                        session=session,
+                        commit=False,
+                        exercise_id=new_exercise.exercise_id,
+                        link_id=link_id,
+                        create_dttm=datetime.utcnow()
+                    )
+                links = await ml.LinkManager.get_all_by_where(
+                    session=session,
+                    where_exp=[ml.LinkManager.model.link_id.in_(
+                        exercise.link_ids)]
+                )
+                new_exercise.links = [
+                    sl.Link.model_validate(link) for link in links
+                ]
+        except Exception as e:
+            print(e)
+            await session.rollback()
+            raise HTTPException(status_code=500, detail="Internal server error")
+        else:
+            await session.commit()
+
         return new_exercise
 
 
