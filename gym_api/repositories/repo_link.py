@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..database.postgres.base import SessionProvider
 from ..config import db
-from ..managers import manager_link as ml
+from ..manager import manager_link as ml
 from ..schemas import schema_link as sl
 
 

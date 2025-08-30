@@ -33,6 +33,9 @@ create table gym.master_gym (
 	create_dttm timestamptz not null,
 	close_dttm timestamptz
 );
+CREATE UNIQUE INDEX unique_active_master_gymer
+ON gym.master_gym (master_id, gymer_id)
+WHERE close_dttm IS NULL;
 
 
 create table gym.exercise (
@@ -59,6 +62,9 @@ create table gym.link_exercise (
 	create_dttm timestamptz not null,
 	close_dttm timestamptz
 );
+CREATE UNIQUE INDEX unique_active_link_exercise
+ON gym.link_exercise (link_id, exercise_id)
+WHERE close_dttm IS NULL;
 
 create table gym.task_group (
 	task_group_id serial primary key,

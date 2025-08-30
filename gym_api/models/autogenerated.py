@@ -104,7 +104,7 @@ class Exercise(Base):
 class MasterGym(Base):
     __tablename__= 'master_gym'
     __table_args__ = (
-        PrimaryKeyConstraint('master_id', 'gymer_id', 'create_dttm'),
+        PrimaryKeyConstraint('master_id', 'gymer_id', 'close_dttm'),
         ForeignKeyConstraint(['gymer_id'], ['gym.gymer.gymer_id'], name='master_gym_gymer_id_fkey'),
         ForeignKeyConstraint(['master_id'], ['gym.master.master_id'], name='master_gym_master_id_fkey'),
         {'schema': 'gym'}
@@ -140,6 +140,7 @@ class TaskGroup(Base):
 class LinkExercise(Base):
     __tablename__ = 'link_exercise'
     __table_args__ = (
+        PrimaryKeyConstraint('exercise_id', 'link_id', 'close_dttm'),
         ForeignKeyConstraint(['exercise_id'], ['gym.exercise.exercise_id'], name='link_exercise_exercise_id_fkey'),
         ForeignKeyConstraint(['link_id'], ['gym.link.link_id'], name='link_exercise_link_id_fkey'),
         {'schema': 'gym'}

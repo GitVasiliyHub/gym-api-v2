@@ -1,4 +1,4 @@
-from datetime import datetime, UTC
+from datetime import datetime
 from typing import Optional, List
 
 from sqlalchemy import select
@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .base import BaseRepository
 from ..database.postgres.base import SessionProvider
 from ..config import db
-from ..managers import manager_exercise as me
-from ..managers import manager_link as ml
+from ..manager import manager_exercise as me
+from ..manager import manager_link as ml
 from ..schemas import schema_exercise as se
 from ..schemas import schema_link as sl
 
@@ -93,7 +93,7 @@ class ExerciseRepository(BaseRepository):
         current_ex.status = exercise.status
         current_ex.exercise_name = exercise.exercise_name
         current_ex.description = exercise.description
-        current_ex.update_dttm = datetime.now(UTC)
+        current_ex.update_dttm = datetime.utcnow()
 
         await session.commit()
         await session.refresh(current_ex)

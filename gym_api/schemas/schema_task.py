@@ -45,16 +45,3 @@ class UpdateTask(BaseModel):
     card_id: int
     status: Optional[TaskStatus]
     order_idx: Optional[int]
-
-
-post card {master_id,
-           exercise=int | str,
-           exercise_desc=int | str
-} - > {}
-
-
-
-copy card (card_id)
-
-
-

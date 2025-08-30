@@ -1,6 +1,6 @@
 from typing import List
 from fastapi import APIRouter, Path, HTTPException, Body, Query
-
+from sqlalchemy.exc import IntegrityError
 
 from ..schemas import user as user_schema
 from ..repositories.repo_user import UserRepository
@@ -19,7 +19,7 @@ async def get_list_of_masters_gymer(
         description='master id'
     )
 ):
-    return await UserRepository.select_master_gymers_data(master_id)
+    return await UserRepository.select_master_gymers(master_id)
 
 
 @router.get(
@@ -30,7 +30,7 @@ async def get_list_of_masters_gymer(
 async def get_user_data_by_telegram_id(
     telegram_id: int = Path(
         ...,
-        description='user id'
+        description='telegram id'
     )
 ):
     user = await UserRepository.select_user_data(telegram_id)
@@ -51,11 +51,10 @@ async def add_user(
         description='Данные пользователя'
     )
 ):
-    user_exist = await UserRepository.select_user_data(user_data.telegram_id)
-    if user_exist:
+    try:
+        return await UserRepository.add_user(user_data)
+    except IntegrityError as e:
         raise HTTPException(status_code=409, detail="User already exists")
-    
-    return await UserRepository.add_user(user_data)
     
     
 @router.post(
@@ -70,20 +69,23 @@ async def add_gymer_for_master(
     ),
     gymer_id: int = Query(
         ...,
-        description='user id'
+        description='gymer id'
     ),
 ):
-    users = await UserRepository.select_master_gymers_data(master_id)
-    if users:
-        for u in users:
-            if gymer_id == u.gymer_id:
-                raise HTTPException(
-                    status_code=409,
-                    detail="User already exists"
-                )
-    
-    await UserRepository.add_masters_gymer(
-        master_id=master_id,
-        gymer_id=gymer_id
-    )
-    return await UserRepository.select_master_gymers_data(master_id)
+    try:
+        await UserRepository.add_masters_gymer(
+            master_id=master_id,
+            gymer_id=gymer_id
+        )
+    except IntegrityError as e:
+        print(e)
+        detail_line = 'Gymer already exists'
+        error_detail = str(e.orig)
+        if 'ForeignKeyViolationError' in error_detail:
+            if "DETAIL:" in error_detail:
+                detail_line = \
+                    [line for line in error_detail.split('\n') if
+                     'DETAIL:' in line]
+                detail_line = ';'.join(detail_line)
+        raise HTTPException(status_code=409, detail=detail_line)
+    return await UserRepository.select_master_gymers(master_id)
