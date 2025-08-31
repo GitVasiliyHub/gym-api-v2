@@ -61,11 +61,12 @@ class Manager:
         return result.scalar()
 
     @classmethod
-    async def delete(cls, uuid: str, session: AsyncSession):
-        statement = delete(cls.model).where(cls.model.id == uuid)
+    async def delete(cls, where_cond, session: AsyncSession, commit=True):
+        statement = delete(cls.model).where(where_cond)
 
         await session.execute(statement)
-        await session.commit()
+        if commit:
+            await session.commit()
 
     @classmethod
     async def get_scalar_by_where(

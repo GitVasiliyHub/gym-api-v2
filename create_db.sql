@@ -60,12 +60,8 @@ create table gym.link (
 create table gym.link_exercise (
 	link_id int references gym.link(link_id),
 	exercise_id int references gym.exercise(exercise_id),
-	create_dttm timestamptz not null,
-	close_dttm timestamptz
+	create_dttm timestamptz not null
 );
-CREATE UNIQUE INDEX unique_active_link_exercise
-ON gym.link_exercise (link_id, exercise_id)
-WHERE close_dttm IS NULL;
 
 create table gym.task_group (
 	task_group_id serial primary key,

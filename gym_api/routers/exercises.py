@@ -1,8 +1,11 @@
 from typing import Optional
 
 from typing import List
-from fastapi import APIRouter, Path, Query, HTTPException, Body
+from fastapi import (APIRouter, Path, Query, HTTPException, Body, Response,
+                     status)
+from sqlalchemy.exc import IntegrityError
 
+from ..exceptions.utils import IntegrityErrorHandler
 from ..repositories.repo_exercise import ExerciseRepository
 from ..schemas import schema_exercise as se
 
@@ -72,6 +75,55 @@ async def copy_exercise(
         raise HTTPException(status_code=404, detail="Exercise not found")
 
     return new_exercise
+
+@router.post(
+    "/link",
+    summary='Add link to exercise',
+    status_code=201
+)
+async def add_link_to_exercise(
+    exercise_id: int = Query(
+        description='exercise id'
+    ),
+    link_id: int = Query(
+        description='link id'
+    )
+):
+    try:
+        await ExerciseRepository.add_link(
+            exercise_id=exercise_id,
+            link_id=link_id
+        )
+    except IntegrityError as e:
+        detail = IntegrityErrorHandler.handle_integrity_error(e)
+        raise HTTPException(status_code=404, detail=detail)
+
+    return Response(status_code=status.HTTP_201_CREATED)
+
+
+@router.delete(
+    "/link",
+    summary='Delete link from exercise',
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_link_from_exercise(
+    exercise_id: int = Query(
+        description='exercise id'
+    ),
+    link_id: int = Query(
+        description='link id'
+    )
+):
+    try:
+        await ExerciseRepository.delete_link(
+            exercise_id=exercise_id,
+            link_id=link_id
+        )
+    except IntegrityError as e:
+        detail = IntegrityErrorHandler.handle_integrity_error(e)
+        raise HTTPException(status_code=404, detail=detail)
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @router.put(

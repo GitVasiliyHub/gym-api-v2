@@ -162,7 +162,6 @@ class LinkExercise(Base):
     link_id: Mapped[int] = mapped_column(Integer)
     exercise_id: Mapped[int] = mapped_column(Integer)
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
-    close_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True))
 
 
 class Task(Base):

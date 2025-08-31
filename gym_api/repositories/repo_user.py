@@ -3,7 +3,6 @@ from datetime import datetime
 from fastapi import HTTPException
 from typing import Optional, List
 
-from asyncpg.exceptions import UniqueViolationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
@@ -64,7 +63,6 @@ class UserRepository(BaseRepository):
             m = user_schema.Master.model_validate(master)
             g = user_schema.Gymer.model_validate(gymer)
 
-        
             await cls.add_masters_gymer(
                 master_id=m.master_id,
                 gymer_id=g.gymer_id,

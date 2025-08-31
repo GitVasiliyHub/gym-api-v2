@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +25,37 @@ _session_provider = SessionProvider(
 class ExerciseRepository(BaseRepository):
     @classmethod
     @_session_provider
+    async def delete_link(
+            cls,
+            exercise_id: int,
+            link_id: int,
+            session: AsyncSession = None
+    ):
+        await ml.LinkExerciseManager.delete(
+            session=session,
+            where_cond=and_(
+                ml.LinkExerciseManager.model.exercise_id == exercise_id,
+                ml.LinkExerciseManager.model.link_id == link_id
+            )
+        )
+
+    @classmethod
+    @_session_provider
+    async def add_link(
+            cls,
+            exercise_id: int,
+            link_id: int,
+            session: AsyncSession = None
+    ):
+        await ml.LinkExerciseManager.create(
+            session=session,
+            exercise_id=exercise_id,
+            link_id=link_id,
+            create_dttm=datetime.utcnow()
+        )
+
+    @classmethod
+    @_session_provider
     async def get_by_id(
             cls,
             exercise_id: int,
@@ -39,11 +70,8 @@ class ExerciseRepository(BaseRepository):
             .where(Exercise.exercise_id == exercise_id)
             .options(
                 selectinload(
-                    Exercise.links.and_(
-                        LinkExercise.close_dttm.is_(None),
-                        Link.close_dttm.is_(None)
-                    )
-            )
+                    Exercise.links.and_(Link.close_dttm.is_(None))
+                )
             )
         )
         result = await session.execute(stmt)
