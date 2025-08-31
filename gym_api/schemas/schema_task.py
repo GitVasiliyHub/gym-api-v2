@@ -1,8 +1,8 @@
-from typing import Optional, Any
+from typing import Optional, Any, List
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class TaskStatus(str, Enum):
     planned = 'planned'
@@ -45,3 +45,18 @@ class UpdateTask(BaseModel):
     card_id: int
     status: Optional[TaskStatus]
     order_idx: Optional[int]
+
+class TaskPropertiesAggregate(TaskProperties):
+    sets: List[Set] = Field(
+        default_factory=list
+    )
+
+class TaskAggregate(Task):
+    task_properties: Optional[TaskPropertiesAggregate] = Field(
+        None
+    )
+
+
+class TaskOrderIndex(BaseModel):
+    task_id: int
+    order_idx: int

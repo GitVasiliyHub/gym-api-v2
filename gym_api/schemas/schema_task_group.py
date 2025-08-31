@@ -1,10 +1,11 @@
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from .schema_user import Master, Gymer
+from .schema_task import TaskAggregate
 
 
 class TaskGroupOrderIndex(BaseModel):
@@ -36,8 +37,9 @@ class TaskGroup(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class TaskGroupAggregate(BaseModel):
-    master: Master
-    gymer: Gymer
+class TaskGroupAggregate(TaskGroup):
+    tasks: List[TaskAggregate] = Field(
+        default_factory=list
+    )
 
     model_config = ConfigDict(from_attributes=True)

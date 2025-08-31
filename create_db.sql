@@ -67,7 +67,7 @@ create table gym.task_group (
 	task_group_id serial primary key,
 	master_id int REFERENCES gym.master(master_id),
 	gymer_id int references gym.gymer(gymer_id),
-	status varchar(15) not null default 'planed',
+	status varchar(15) not null default 'planned',
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz,
 	start_dttm timestamptz,
@@ -78,7 +78,7 @@ create table gym.task (
 	task_id serial primary key,
 	task_group_id int references gym.task_group(task_group_id),
 	exercise_id int references gym.exercise(exercise_id),
-	status varchar(15) not null default 'planed',
+	status varchar(15) not null default 'planned',
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz,
 	order_idx int

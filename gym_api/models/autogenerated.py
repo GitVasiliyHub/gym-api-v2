@@ -138,7 +138,8 @@ class TaskGroup(Base):
     )
 
     task_group_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    status: Mapped[str] = mapped_column(String(15), server_default=text("'planed'::character varying"))
+    status: Mapped[str] = mapped_column(String(15), server_default=text(
+        "'planned'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     master_id: Mapped[Optional[int]] = mapped_column(Integer)
     gymer_id: Mapped[Optional[int]] = mapped_column(Integer)
@@ -146,9 +147,14 @@ class TaskGroup(Base):
     start_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
-    gymer: Mapped[Optional['Gymer']] = relationship('Gymer', back_populates='task_group')
-    master: Mapped[Optional['Master']] = relationship('Master', back_populates='task_group')
-    task: Mapped[List['Task']] = relationship('Task', back_populates='task_group')
+    gymer: Mapped[Optional['Gymer']] = relationship(
+        'Gymer', back_populates='task_group', lazy="selectin"
+    )
+    master: Mapped[Optional['Master']] = relationship(
+        'Master', back_populates='task_group', lazy="selectin")
+    tasks: Mapped[List['Task']] = relationship(
+        'Task', back_populates='task_group', lazy="selectin"
+    )
 
 class LinkExercise(Base):
     __tablename__ = 'link_exercise'
@@ -174,7 +180,8 @@ class Task(Base):
     )
 
     task_id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    status: Mapped[str] = mapped_column(String(15), server_default=text("'planed'::character varying"))
+    status: Mapped[str] = mapped_column(String(15), server_default=text(
+        "'planned'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
     task_group_id: Mapped[Optional[int]] = mapped_column(Integer)
     exercise_id: Mapped[Optional[int]] = mapped_column(Integer)
@@ -182,7 +189,8 @@ class Task(Base):
     order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
     exercise: Mapped[Optional['Exercise']] = relationship('Exercise', back_populates='task')
-    task_group: Mapped[Optional['TaskGroup']] = relationship('TaskGroup', back_populates='task')
+    task_group: Mapped[Optional['TaskGroup']] = relationship('TaskGroup',
+                                                             back_populates='tasks')
     task_properties: Mapped[List['TaskProperties']] = relationship('TaskProperties', back_populates='task')
 
 
@@ -201,7 +209,8 @@ class TaskProperties(Base):
     rest: Mapped[Optional[int]] = mapped_column(Integer)
 
     task: Mapped[Optional['Task']] = relationship('Task', back_populates='task_properties')
-    set: Mapped[List['Set']] = relationship('Set', back_populates='task_properties')
+    sets: Mapped[List['Set']] = relationship('Set',
+                                             back_populates='task_properties')
 
 
 class Set(Base):
@@ -219,4 +228,5 @@ class Set(Base):
     plan_value: Mapped[Optional[decimal.Decimal]] = mapped_column(Numeric(10, 1))
     plan_rep: Mapped[Optional[int]] = mapped_column(Integer)
 
-    task_properties: Mapped[Optional['TaskProperties']] = relationship('TaskProperties', back_populates='set')
+    task_properties: Mapped[Optional['TaskProperties']] = relationship(
+        'TaskProperties', back_populates='sets')
