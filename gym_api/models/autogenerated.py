@@ -188,10 +188,15 @@ class Task(Base):
     update_dttm: Mapped[Optional[datetime.datetime]] = mapped_column(DateTime(True))
     order_idx: Mapped[Optional[int]] = mapped_column(Integer)
 
-    exercise: Mapped[Optional['Exercise']] = relationship('Exercise', back_populates='task')
-    task_group: Mapped[Optional['TaskGroup']] = relationship('TaskGroup',
-                                                             back_populates='tasks')
-    task_properties: Mapped[List['TaskProperties']] = relationship('TaskProperties', back_populates='task')
+    exercise: Mapped[Optional['Exercise']] = relationship(
+        'Exercise', back_populates='task', lazy="selectin"
+    )
+    task_group: Mapped[Optional['TaskGroup']] = relationship(
+        'TaskGroup', back_populates='tasks'
+    )
+    task_properties: Mapped[Optional['TaskProperties']] = relationship(
+        'TaskProperties', back_populates='task',  lazy="selectin"
+    )
 
 
 class TaskProperties(Base):
@@ -209,8 +214,9 @@ class TaskProperties(Base):
     rest: Mapped[Optional[int]] = mapped_column(Integer)
 
     task: Mapped[Optional['Task']] = relationship('Task', back_populates='task_properties')
-    sets: Mapped[List['Set']] = relationship('Set',
-                                             back_populates='task_properties')
+    sets: Mapped[List['Set']] = relationship(
+        'Set', back_populates='task_properties', lazy="selectin"
+    )
 
 
 class Set(Base):

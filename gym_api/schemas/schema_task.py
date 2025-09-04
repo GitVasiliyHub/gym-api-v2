@@ -4,6 +4,13 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
+
+
+class TaskOrderIndex(BaseModel):
+    task_id: int
+    order_idx: int
+
+
 class TaskStatus(str, Enum):
     planned = 'planned'
     running = 'running'
@@ -13,7 +20,7 @@ class TaskStatus(str, Enum):
 class Task(BaseModel):
     task_id: int
     task_group_id: int
-    card_id: Optional[int]
+    exercise_id: Optional[int]
     status: TaskStatus
     create_dttm: datetime
     update_dttm: Optional[datetime]
@@ -53,10 +60,5 @@ class TaskPropertiesAggregate(TaskProperties):
 
 class TaskAggregate(Task):
     task_properties: Optional[TaskPropertiesAggregate] = Field(
-        None
+        default=None
     )
-
-
-class TaskOrderIndex(BaseModel):
-    task_id: int
-    order_idx: int

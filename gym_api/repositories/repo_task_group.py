@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .base import BaseRepository
@@ -19,6 +19,27 @@ _session_provider = SessionProvider(
 )
 
 class TaskGroupRepository(BaseRepository):
+    @classmethod
+    @_session_provider
+    async def reorder_task_group(
+            cls,
+            ordered_ids: List[stg.TaskGroupOrderIndex],
+            session: AsyncSession = None
+    ):
+        await session.execute(
+            update(mtg.TaskGroupManager.model),
+            [
+                {
+                    "task_group_id": data.task_group_id,
+                    "order_idx": data.order_idx,
+                    "update_dttm": datetime.now()
+                }
+                for data in ordered_ids
+            ]
+
+        )
+        await session.commit()
+
     @classmethod
     @_session_provider
     async def create(

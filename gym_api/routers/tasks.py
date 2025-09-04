@@ -1,11 +1,12 @@
 import json
-from typing import Optional
+from typing import Optional, List
 
-from typing import List
 from fastapi import (
     APIRouter, Path, Query, HTTPException, Body, status, Response
 )
+from sqlalchemy.exc import IntegrityError
 
+from ..exceptions.utils import IntegrityErrorHandler
 from ..repositories.gym import GymRepository
 from ..repositories.repo_task import TaskRepository
 from ..repositories.repo_task_group import TaskGroupRepository
@@ -16,8 +17,27 @@ from ..schemas import schema_task_group as stg
 router = APIRouter(prefix='/task')
 
 
+@router.post(
+    "",
+    summary='Creating a new task',
+    response_model=schema_task.TaskAggregate
+)
+async def create_task(
+    task_group_id: int = Query(
+        ...,
+        description='task_group_id'
+    )
+):
+    try:
+        return await TaskRepository.create_task(task_group_id=task_group_id)
+    except IntegrityError as e:
+        detail = IntegrityErrorHandler.handle_integrity_error(e)
+        raise HTTPException(status_code=404, detail=detail)
+
+
+
 @router.get(
-    "/{task_group_id}/tasks",
+    "/tasks/{task_group_id}",
     summary='Getting a list of task by task_group_id',
     response_model=List[schema_task.TaskAggregate]
 )
@@ -27,166 +47,11 @@ async def get_tasks_with_exercise_by_group(
         description='task_group id'
     )
 ):
-    tasks = await TaskRepository.get_tasks_by_group(task_group_id)
-    if not tasks:
-        raise HTTPException(status_code=404, detail="Tasks not found")
-    return tasks
-
-
-
-@router.post(
-    "",
-    summary='Creating a new task',
-    response_model=schema_task.Task
-)
-async def create_task(
-    task_group_id: int = Query(
-        ...,
-        description='task_group_id'
-    )
-):
-    task_group = await TaskGroupRepository.get_task_group(task_group_id)
-    if not task_group:
-        raise HTTPException(
-                status_code=404,
-                detail="Task group not found or access denied"
-            )
-    return await TaskRepository.create_task(task_group_id=task_group_id)
-
-
-@router.put(
-    "",
-    summary='Master updating task by task_id',
-    response_model=schema_task.Task
-)
-async def master_update_task(
-    task_update: schema_task.UpdateTask = Body(
-        ...,
-        description='Параметры обновлния'
-    ),
-    # current_master: dict = Depends(get_current_master)
-):
-    # Проверяем принадлежность задачи мастеру
-    
-    task = await GymRepository.get_task_group_by_task_id(task_update.task_id)
-    
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
- 
-    task_group_status = task.task_group.status
-    
-    if task_group_status != 'planned':
-         raise HTTPException(
-             status_code=403,
-             detail=f"Task can't update, task_group_stasus {task_group_status}"
-        )
-        
-    updated_task = await GymRepository.update_task(
-        task_id=task_update.task_id,
-        exercise_desc_id=task_update.exercise_desc_id,
-        properties=task_update.properties.model_dump()
-    )
-    if not updated_task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    return updated_task
-
-
-@router.put(
-    "/{task_id}/gymer_id",
-    summary='Gymer updating task by task_id',
-    response_model=schema_task.Task
-)
-async def gymer_update_task(
-    task_id: int = Path(
-        ...,
-        description='task_id'
-    ),
-    gymer_id: int = Query(
-        ...,
-        description='gymer_id'
-    ),
-    task_update: schema_task.UpdateTask = Body(
-        ...,
-        description='Параметры обновлния'
-    ),
-    # current_master: dict = Depends(get_current_master)
-):
-    # Проверяем принадлежность задачи gymer
-   
-    task = await GymRepository.get_task_group_by_task_id(task_id)
-    
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
- 
-    task_group = stg.TaskGroup.model_validate(task.task_group)
-    
-    if task_group.status not in (stg.TaskGroupStatus.planned,
-                                 stg.TaskGroupStatus.running):
-         raise HTTPException(
-             status_code=403,
-             detail="Task can't update, task_group_stasus {task_group.status}"
-        )
-  
-    updated_task = await GymRepository.update_task(
-        task_id=task_id,
-        exercise_desc_id=task_update.exercise_desc_id,
-        properties=task_update.properties.model_dump()
-    )
-        
-    if not updated_task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    
-    if task_group.status == stg.TaskGroupStatus.planned:
-        await GymRepository.update_task_group_status(
-            task_group_id=task_group.task_group_id,
-            status=stg.TaskGroupStatus.running
-        )
-    return updated_task
-
-
-@router.get(
-    "/{gymer_id}/history",
-    summary='Getting training history by master_id and gymmer_id',
-    response_model=List[stg.TaskGroupAggregate]
-)
-async def get_master_task_groups_with_tasks(
-    gymer_id: int = Path(
-        ...
-    ),
-    master_id: Optional[int] = Query(
-        None
-    ),
-    page_no: int = Query(1, description='Номер страницы'),
-    page_size: int = Query(100, description='Размер страницы'),
-    # current_master: dict = Depends(get_current_master),
-):
-    # Фильтрация по мастеру и дополнительным параметрам
-    limit = page_size
-    offset = (page_no - 1) * page_size
-    
-    return await GymRepository.get_master_task_groups_with_tasks(
-        master_id=master_id,
-        gymer_id=gymer_id,
-        limit=limit,
-        offset=offset
-    )
-
-@router.get(
-    "/{task_id}",
-    summary='Getting task by task_id',
-    response_model=schema_task.TaskAggregate
-    )
-async def get_task_by_task_id(
-        task_id: int = Path(
-        ...,
-        description='task_id'
-    )
-):
-    task = await GymRepository.get_task_by_id(task_id=task_id)
-    if not task:
-        raise HTTPException(status_code=404, detail="Task not found")
-    
-    return task
+    try:
+        return await TaskRepository.get_tasks_by_group(task_group_id)
+    except IntegrityError as e:
+        detail = IntegrityErrorHandler.handle_integrity_error(e)
+        raise HTTPException(status_code=404, detail=detail)
 
 
 @router.put(
@@ -197,6 +62,143 @@ async def get_task_by_task_id(
 async def reorder_task(
     ordered_ids: List[schema_task.TaskOrderIndex]
 ):
-    await GymRepository.reorder_task(ordered_ids)
-    
+    await TaskRepository.reorder_task(ordered_ids)
+
     return Response(status_code=200)
+
+
+# @router.put(
+#     "",
+#     summary='Master updating task by task_id',
+#     response_model=schema_task.Task
+# )
+# async def master_update_task(
+#     task_update: schema_task.UpdateTask = Body(
+#         ...,
+#         description='Параметры обновлния'
+#     ),
+#     # current_master: dict = Depends(get_current_master)
+# ):
+#     # Проверяем принадлежность задачи мастеру
+#
+#     task = await GymRepository.get_task_group_by_task_id(task_update.task_id)
+#
+#     if not task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#
+#     task_group_status = task.task_group.status
+#
+#     if task_group_status != 'planned':
+#          raise HTTPException(
+#              status_code=403,
+#              detail=f"Task can't update, task_group_stasus {task_group_status}"
+#         )
+#
+#     updated_task = await GymRepository.update_task(
+#         task_id=task_update.task_id,
+#         exercise_desc_id=task_update.exercise_desc_id,
+#         properties=task_update.properties.model_dump()
+#     )
+#     if not updated_task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#     return updated_task
+#
+#
+# @router.put(
+#     "/{task_id}/gymer_id",
+#     summary='Gymer updating task by task_id',
+#     response_model=schema_task.Task
+# )
+# async def gymer_update_task(
+#     task_id: int = Path(
+#         ...,
+#         description='task_id'
+#     ),
+#     gymer_id: int = Query(
+#         ...,
+#         description='gymer_id'
+#     ),
+#     task_update: schema_task.UpdateTask = Body(
+#         ...,
+#         description='Параметры обновлния'
+#     ),
+#     # current_master: dict = Depends(get_current_master)
+# ):
+#     # Проверяем принадлежность задачи gymer
+#
+#     task = await GymRepository.get_task_group_by_task_id(task_id)
+#
+#     if not task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#
+#     task_group = stg.TaskGroup.model_validate(task.task_group)
+#
+#     if task_group.status not in (stg.TaskGroupStatus.planned,
+#                                  stg.TaskGroupStatus.running):
+#          raise HTTPException(
+#              status_code=403,
+#              detail="Task can't update, task_group_stasus {task_group.status}"
+#         )
+#
+#     updated_task = await GymRepository.update_task(
+#         task_id=task_id,
+#         exercise_desc_id=task_update.exercise_desc_id,
+#         properties=task_update.properties.model_dump()
+#     )
+#
+#     if not updated_task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#
+#     if task_group.status == stg.TaskGroupStatus.planned:
+#         await GymRepository.update_task_group_status(
+#             task_group_id=task_group.task_group_id,
+#             status=stg.TaskGroupStatus.running
+#         )
+#     return updated_task
+#
+#
+# @router.get(
+#     "/{gymer_id}/history",
+#     summary='Getting training history by master_id and gymmer_id',
+#     response_model=List[stg.TaskGroupAggregate]
+# )
+# async def get_master_task_groups_with_tasks(
+#     gymer_id: int = Path(
+#         ...
+#     ),
+#     master_id: Optional[int] = Query(
+#         None
+#     ),
+#     page_no: int = Query(1, description='Номер страницы'),
+#     page_size: int = Query(100, description='Размер страницы'),
+#     # current_master: dict = Depends(get_current_master),
+# ):
+#     # Фильтрация по мастеру и дополнительным параметрам
+#     limit = page_size
+#     offset = (page_no - 1) * page_size
+#
+#     return await GymRepository.get_master_task_groups_with_tasks(
+#         master_id=master_id,
+#         gymer_id=gymer_id,
+#         limit=limit,
+#         offset=offset
+#     )
+#
+# @router.get(
+#     "/{task_id}",
+#     summary='Getting task by task_id',
+#     response_model=schema_task.TaskAggregate
+#     )
+# async def get_task_by_task_id(
+#         task_id: int = Path(
+#         ...,
+#         description='task_id'
+#     )
+# ):
+#     task = await GymRepository.get_task_by_id(task_id=task_id)
+#     if not task:
+#         raise HTTPException(status_code=404, detail="Task not found")
+#
+#     return task
+#
+#

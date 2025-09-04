@@ -73,6 +73,20 @@ async def list_task_group(
     return task_groups
 
 
+@router.put(
+    "/reorder",
+    summary='Change order position task_group',
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def reorder_task_group(
+    ordered_ids: List[stg.TaskGroupOrderIndex]
+):
+    await TaskGroupRepository.reorder_task_group(ordered_ids)
+
+    return Response(status_code=200)
+
+
+
 # @router.post(
 #     "/copy/{task_group_id}",
 #     summary='Creating task group',
@@ -88,17 +102,3 @@ async def list_task_group(
 #     return await GymRepository.copy_task_group(
 #         task_group_id=task_group_id
 #     )
-
-#
-# @router.put(
-#     "/reorder",
-#     summary='Change order position task_group',
-#     status_code=status.HTTP_202_ACCEPTED
-# )
-# async def reorder_task_group(
-#     ordered_ids: List[TaskGroupOrderIndex]
-# ):
-#     await GymRepository.reorder_task_group(ordered_ids)
-#
-#     return Response(status_code=200)
-#

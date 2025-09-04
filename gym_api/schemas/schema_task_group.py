@@ -13,11 +13,6 @@ class TaskGroupOrderIndex(BaseModel):
     order_idx: int
 
 
-class TaskOrderIndex(BaseModel):
-    task_id: int
-    order_idx: int
-
-
 class TaskGroupStatus(str, Enum):
     planned = 'planned'
     running = 'running'
