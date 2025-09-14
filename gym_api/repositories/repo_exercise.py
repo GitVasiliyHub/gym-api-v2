@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional, List
 
 from fastapi import HTTPException
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -63,7 +63,6 @@ class ExerciseRepository(BaseRepository):
     ):
         Exercise = me.ExerciseManager.model
         Link = ml.LinkManager.model
-        LinkExercise = ml.LinkExerciseManager.model
 
         stmt = (
             select(Exercise)
@@ -156,26 +155,82 @@ class ExerciseRepository(BaseRepository):
     @_session_provider
     async def update(
             cls,
-            exercise: se.Exercise,
+            exercise: se.ExerciseAggregate,
             session: AsyncSession = None
     ) -> Optional[se.ExerciseAggregate]:
+        commit = False
+        if not exercise.exercise_id:
+            return await cls.create(
+                exercise=se.CreateExercise(
+                    master_id=exercise.master_id,
+                    exercise_name=exercise.exercise_name,
+                    description=exercise.description,
+                    link_ids=[l.link_id for l in exercise.links]
+                ),
+                session=session
+            )
 
-        current_ex = await session.get(
-            me.ExerciseManager.model, exercise.exercise_id
+        current_ex = await cls.get_by_id(
+            exercise_id=exercise.exercise_id,
+            session=session
         )
+
         if not current_ex:
-            return None
+            return
 
-        current_ex.status = exercise.status
-        current_ex.exercise_name = exercise.exercise_name
-        current_ex.description = exercise.description
-        current_ex.update_dttm = datetime.utcnow()
+        update_ex_values = {}
+        if current_ex.exercise_name != exercise.exercise_name:
+            update_ex_values['exercise_name'] = exercise.exercise_name
 
-        await session.commit()
-        await session.refresh(current_ex)
-        new_exercise = se.ExerciseAggregate.model_validate(current_ex)
+        if current_ex.description != exercise.description:
+            update_ex_values['description'] = exercise.description
 
-        return new_exercise
+        if current_ex.status != exercise.status:
+            update_ex_values['status'] = exercise.status
+
+        if update_ex_values:
+            model = me.ExerciseManager.model
+            stmt = (
+                update(model)
+                .where(model.exercise_id == current_ex.exercise_id)
+                .values(update_ex_values)
+            )
+            await session.execute(stmt)
+            commit = True
+
+        current_links = [l.link_id for l in current_ex.links]
+        new_links = [l.link_id for l in exercise.links]
+
+        delete_links = set(current_links) - set(new_links)
+        add_links = set(new_links) - set(current_links)
+
+        for link_id in add_links:
+            await ml.LinkExerciseManager.create(
+                session=session,
+                commit=False,
+                exercise_id=current_ex.exercise_id,
+                link_id=link_id,
+                create_dttm=datetime.utcnow()
+            )
+            commit = True
+
+        for link_id in delete_links:
+            await ml.LinkExerciseManager.delete(
+                session=session,
+                commit=False,
+                where_cond=and_(
+                    ml.LinkExerciseManager.model.exercise_id == current_ex.exercise_id,
+                    ml.LinkExerciseManager.model.link_id == link_id
+                )
+            )
+            commit = True
+        if commit:
+            await session.commit()
+
+        return await cls.get_by_id(
+            exercise_id=exercise.exercise_id,
+            session=session
+        )
 
     @classmethod
     @_session_provider

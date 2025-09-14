@@ -129,10 +129,10 @@ async def delete_link_from_exercise(
 @router.put(
     "",
     summary='Update exercise',
-    response_model=List[se.ExerciseAggregate]
+    response_model=se.ExerciseAggregate
 )
 async def update_exercise(
-    exercise: se.Exercise = Body(
+    exercise: se.ExerciseAggregate = Body(
         description='Exercise data'
     )
 ):

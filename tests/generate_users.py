@@ -17,10 +17,10 @@ amvera_db = dict(
     dbname='gym',
     user='didvasiliy',
     password='rvVk3KsVuyaKh!r',
-    host='gym-db-didvasiliy.db-msk0.amvera.tech',
+    host='dbv2-didvasiliy.db-msk0.amvera.tech',
     port=5432
 )
-conn = psycopg2.connect(**local_db)
+conn = psycopg2.connect(**amvera_db)
 cursor = conn.cursor()
 
 def execute_ddl():
