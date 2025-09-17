@@ -12,7 +12,7 @@ class ExerciseStatus(str, Enum):
 
 
 class Exercise(BaseModel):
-    exercise_id: int
+    exercise_id: Optional[int]
     master_id: int
     exercise_name: Optional[str]
     description: Optional[str]
