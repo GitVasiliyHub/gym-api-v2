@@ -69,7 +69,7 @@ async def list_task_group(
         detail = IntegrityErrorHandler.handle_integrity_error(e)
         raise HTTPException(status_code=404, detail=detail)
     if not task_groups:
-        raise HTTPException(status_code=404, detail="Tasks not found")
+        raise HTTPException(status_code=404, detail="Task groups not found")
     return task_groups
 
 

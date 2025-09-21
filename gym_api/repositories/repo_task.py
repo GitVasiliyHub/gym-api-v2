@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from fastapi import HTTPException
 
@@ -19,6 +19,109 @@ _session_provider = SessionProvider(
 )
 
 class TaskRepository(BaseRepository):
+    @classmethod
+    @_session_provider
+    async def update(
+            cls,
+            task: st.UpdateTask,
+            session: AsyncSession = None
+    ):
+        commit = False
+        manager = mt.TaskManager
+        current_task = await manager.get_scalar_by_where(
+            where_exp=[manager.model.task_id == task.task_id],
+            session=session
+        )
+        if not current_task:
+            raise HTTPException(404, f'Task {task.task_id} not found')
+
+        current_task = st.TaskAggregate.model_validate(current_task)
+        current_sets = [
+            s.set_id for s in current_task.task_properties.sets
+        ]
+        new_sets = [
+            s.set_id for s in task.task_properties.sets if s.set_id
+        ]
+        delete_sets = set(current_sets) - set(new_sets)
+
+        if delete_sets:
+            for set_id in delete_sets:
+                await mt.SetManager.delete(
+                    where_cond=and_(mt.SetManager.model.set_id == set_id),
+                    session=session,
+                    commit=False
+                )
+                commit = True
+        update_task_values = {}
+
+        if task.exercise_id != current_task.exercise_id:
+            update_task_values['exercise_id'] = task.exercise_id
+
+        if task.status != current_task.status:
+            update_task_values['status'] = task.status
+
+        if update_task_values:
+            model = mt.TaskManager.model
+            stmt = (
+                update(model)
+                .where(model.task_id == current_task.task_id)
+                .values(update_task_values)
+            )
+            await session.execute(stmt)
+            commit = True
+
+        if task.task_properties:
+            await mt.TaskPropertiesManager.update(
+                conditions=[
+                    mt.TaskPropertiesManager.model.task_properties_id ==
+                    current_task.task_properties.task_properties_id
+                ],
+                session=session,
+                commit=False,
+                min_weight=task.task_properties.min_weight,
+                max_weight=task.task_properties.max_weight,
+                rest=task.task_properties.rest
+            )
+            commit = True
+
+            for s in task.task_properties.sets:
+                if s.set_id in new_sets:
+                    await mt.SetManager.update(
+                        conditions=[
+                            mt.SetManager.model.set_id == s.set_id
+                        ],
+                        session=session,
+                        commit=False,
+                        fact_value=s.fact_value,
+                        fact_rep=s.fact_rep,
+                        plan_value=s.plan_value,
+                        plan_rep=s.plan_rep
+
+                    )
+                    commit = True
+                    continue
+
+                await mt.SetManager.create(
+                    commit=False,
+                    session=session,
+                    task_properties_id=current_task.task_properties
+                    .task_properties_id,
+                    fact_value=s.fact_value,
+                    fact_rep=s.fact_rep,
+                    plan_value=s.plan_value,
+                    plan_rep=s.plan_rep
+                )
+                commit = True
+
+            if commit:
+                await session.commit()
+
+        return await manager.get_scalar_by_where(
+            where_exp=[manager.model.task_id == task.task_id],
+            session=session
+        )
+
+
     @classmethod
     @_session_provider
     async def reorder_task(
@@ -56,7 +159,7 @@ class TaskRepository(BaseRepository):
 
     @classmethod
     @_session_provider
-    async def create_task(
+    async def create(
             cls,
             task_group_id: int,
             session: AsyncSession = None
@@ -81,9 +184,8 @@ class TaskRepository(BaseRepository):
                 task_props
             )
         except Exception as e:
-            print(e)
             await session.rollback()
-            raise HTTPException(status_code=500, detail="Internal server error")
+            raise e
         else:
             await session.commit()
 
