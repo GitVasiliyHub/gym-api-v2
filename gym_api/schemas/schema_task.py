@@ -30,6 +30,7 @@ class Task(BaseModel):
 
 
 class TaskProperties(BaseModel):
+    task_properties_id: int
     task_id: int
     max_weight: Optional[float]
     min_weight: Optional[float]
@@ -41,24 +42,53 @@ class TaskProperties(BaseModel):
 class Set(BaseModel):
     set_id: int
     task_properties_id: int
-    fact_value: Any
-    fact_rep: Any
-    plan_value: Any
-    plan_rep: Any
+    fact_value: Optional[float]
+    fact_rep: Optional[int]
+    plan_value: Optional[float]
+    plan_rep: Optional[int]
 
+    model_config = ConfigDict(from_attributes=True)
 
-class UpdateTask(BaseModel):
-    task_id: int
-    card_id: int
-    status: Optional[TaskStatus]
-    order_idx: Optional[int]
 
 class TaskPropertiesAggregate(TaskProperties):
     sets: List[Set] = Field(
         default_factory=list
     )
+    model_config = ConfigDict(from_attributes=True)
+
 
 class TaskAggregate(Task):
     task_properties: Optional[TaskPropertiesAggregate] = Field(
         default=None
     )
+    model_config = ConfigDict(from_attributes=True)
+
+
+class TaskPropertiesUpdate(BaseModel):
+    max_weight: Optional[float]
+    min_weight: Optional[float]
+    rest: Optional[int]
+
+
+class SetUpdate(BaseModel):
+    set_id: Optional[int] = None
+    fact_value: Optional[float] = None
+    fact_rep: Optional[int] = None
+    plan_value: Optional[int] = None
+    plan_rep: Optional[int] = None
+
+
+class TaskPropertiesAggregateUpdate(TaskPropertiesUpdate):
+    sets: List[SetUpdate] = Field(
+        default_factory=list
+    )
+
+
+class UpdateTask(BaseModel):
+    task_id: int
+    exercise_id: int
+    status: Optional[TaskStatus]
+    task_properties: Optional[TaskPropertiesAggregateUpdate] = Field(
+        default=None
+    )
+

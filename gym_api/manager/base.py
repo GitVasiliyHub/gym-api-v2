@@ -25,14 +25,15 @@ class Manager:
 
     @classmethod
     async def update(
-            cls, conditions: list, session: AsyncSession, **kwargs
+            cls, conditions: list, session: AsyncSession, commit=True,
+            **kwargs
     ) -> Generic[T]:
         statement = (
             update(cls.model).where(*conditions).values(**kwargs)
         )
-
         await session.execute(statement)
-        await session.commit()
+        if commit:
+            await session.commit()
 
     @classmethod
     async def get_all(

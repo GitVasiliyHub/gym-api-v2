@@ -214,12 +214,12 @@ class TaskProperties(Base):
     rest: Mapped[Optional[int]] = mapped_column(Integer)
 
     task: Mapped[Optional['Task']] = relationship('Task', back_populates='task_properties')
-    sets: Mapped[List['Set']] = relationship(
-        'Set', back_populates='task_properties', lazy="selectin"
+    sets: Mapped[List['SetI']] = relationship(
+        'SetI', back_populates='task_properties', lazy="selectin"
     )
 
 
-class Set(Base):
+class SetI(Base):
     __tablename__ = 'set'
     __table_args__ = (
         ForeignKeyConstraint(['task_properties_id'], ['gym.task_properties.task_properties_id'], name='set_task_properties_id_fkey'),

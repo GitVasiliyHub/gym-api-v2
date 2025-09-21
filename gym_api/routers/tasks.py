@@ -20,7 +20,7 @@ router = APIRouter(prefix='/task')
 @router.post(
     "",
     summary='Creating a new task',
-    response_model=schema_task.TaskAggregate
+    response_model=Optional[schema_task.TaskAggregate]
 )
 async def create_task(
     task_group_id: int = Query(
@@ -29,7 +29,7 @@ async def create_task(
     )
 ):
     try:
-        return await TaskRepository.create_task(task_group_id=task_group_id)
+        return await TaskRepository.create(task_group_id=task_group_id)
     except IntegrityError as e:
         detail = IntegrityErrorHandler.handle_integrity_error(e)
         raise HTTPException(status_code=404, detail=detail)
@@ -65,6 +65,24 @@ async def reorder_task(
     await TaskRepository.reorder_task(ordered_ids)
 
     return Response(status_code=200)
+
+
+@router.put(
+    "",
+    summary="Update task",
+    response_model=schema_task.TaskAggregate
+)
+async def update_task(
+        task: schema_task.UpdateTask = Body(
+            ...,
+            description='Параметры обновления'
+        )
+):
+    try:
+        return await TaskRepository.update(task)
+    except IntegrityError as e:
+        detail = IntegrityErrorHandler.handle_integrity_error(e)
+        raise HTTPException(status_code=404, detail=detail)
 
 
 # @router.put(

@@ -10,4 +10,4 @@ class TaskPropertiesManager(Manager):
     model = model.TaskProperties
 
 class SetManager(Manager):
-    model = model.Set
+    model = model.SetI
