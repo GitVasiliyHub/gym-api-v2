@@ -3,6 +3,7 @@ from datetime import datetime
 from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
+from .schema_exercise import ExerciseAggregate
 
 
 
@@ -25,6 +26,10 @@ class Task(BaseModel):
     create_dttm: datetime
     update_dttm: Optional[datetime]
     order_idx: Optional[int]
+
+    exercise: Optional[ExerciseAggregate] = Field(
+        default=None
+    )
 
     model_config = ConfigDict(from_attributes=True)
 
