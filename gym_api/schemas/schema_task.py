@@ -16,6 +16,19 @@ class TaskStatus(str, Enum):
     planned = 'planned'
     running = 'running'
     finished = 'finished'
+    delete = 'delete'
+
+
+class TaskBase(BaseModel):
+    task_id: int
+    task_group_id: int
+    exercise_id: Optional[int]
+    status: TaskStatus
+    create_dttm: datetime
+    update_dttm: Optional[datetime]
+    order_idx: Optional[int]
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class Task(BaseModel):

@@ -87,18 +87,23 @@ async def reorder_task_group(
 
 
 
-# @router.post(
-#     "/copy/{task_group_id}",
-#     summary='Creating task group',
-#     response_model=stg.TaskGroupAggregate
-# )
-# async def copy_task_group(
-#     task_group_id: int = Path(
-#         ...,
-#         description='task group id'
-#     )
-# ):
-#
-#     return await GymRepository.copy_task_group(
-#         task_group_id=task_group_id
-#     )
+@router.post(
+    "/copy/{task_group_id}",
+    summary='Creating task group',
+    response_model=stg.TaskGroupAggregate
+)
+async def copy_task_group(
+    task_group_id: int = Path(
+        ...,
+        description='task group id'
+    )
+):
+    new_task_group_id = await TaskGroupRepository.copy(
+        task_group_id=task_group_id
+    )
+    if not new_task_group_id:
+        raise HTTPException(status_code=404, detail="Task groups not found")
+
+    return await TaskGroupRepository.get_by_id(
+        task_group_id=new_task_group_id
+    )

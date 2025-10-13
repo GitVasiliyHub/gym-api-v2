@@ -4,7 +4,6 @@ from enum import Enum
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .schema_user import Master, Gymer
 from .schema_task import TaskAggregate
 
 
@@ -17,6 +16,8 @@ class TaskGroupStatus(str, Enum):
     planned = 'planned'
     running = 'running'
     finished = 'finished'
+    deleted = 'deleted'
+    archived = 'archived'
 
 
 class TaskGroup(BaseModel):
