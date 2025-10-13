@@ -159,27 +159,78 @@ class TaskRepository(BaseRepository):
 
     @classmethod
     @_session_provider
+    async def create_task(
+            cls,
+            task_group_id: int,
+            commit: bool = False,
+            session: AsyncSession = None,
+            **kwargs
+    ):
+        try:
+            task_manager = mt.TaskManager
+            task = await task_manager.create(
+                task_group_id=task_group_id,
+                commit=commit,
+                session=session,
+                **kwargs
+            )
+
+            task = st.TaskBase.model_validate(task)
+            task_a = st.TaskAggregate.model_validate(task)
+        except Exception as e:
+            await session.rollback()
+            raise e
+        else:
+            if commit:
+                await session.commit()
+
+        return task_a
+
+    @classmethod
+    @_session_provider
+    async def create_task_properties(
+            cls,
+            task_id: int,
+            commit: bool = False,
+            session: AsyncSession = None,
+            **kwargs
+    ):
+        try:
+            task_props_manager = mt.TaskPropertiesManager
+            task_props = await task_props_manager.create(
+                session=session,
+                commit=commit,
+                task_id=task_id,
+                **kwargs
+            )
+            task_props = st.TaskProperties.model_validate(task_props)
+        except Exception as e:
+            await session.rollback()
+            raise e
+        else:
+            if commit:
+                await session.commit()
+
+        return task_props
+
+    @classmethod
+    @_session_provider
     async def create(
             cls,
             task_group_id: int,
             session: AsyncSession = None
     ):
         try:
-            task_manager = mt.TaskManager
-            task_props_manager = mt.TaskPropertiesManager
-            task = await task_manager.create(
+            task_a = await cls.create_task(
                 task_group_id=task_group_id,
                 commit=False,
                 session=session
             )
-            task = st.Task.model_validate(task)
-            task_a = st.TaskAggregate.model_validate(task)
-            task_props = await task_props_manager.create(
-                session=session,
+            task_props = await cls.create_task_properties(
+                task_id=task_a.task_id,
                 commit=False,
-                task_id=task_a.task_id
+                session=session
             )
-            task_props = st.TaskProperties.model_validate(task_props)
             task_a.task_properties = st.TaskPropertiesAggregate.model_validate(
                 task_props
             )

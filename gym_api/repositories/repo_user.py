@@ -81,7 +81,7 @@ class UserRepository(BaseRepository):
                     detail_line = ';'.join(detail_line)
 
             raise HTTPException(status_code=409, detail=detail_line)
-        except Exception as e:
+        except Exception:
             await session.rollback()
             raise HTTPException(status_code=500, detail="Internal server error")
         
@@ -103,8 +103,10 @@ class UserRepository(BaseRepository):
         )
         user = await session.execute(user_stmt)
         user = user.scalars().first()
+
         if not user:
-            return
+            return None
+
         master_stmt = (
             select(mu.MasterManager.model)
             .where(mu.MasterManager.model.user_id == user.user_id)
