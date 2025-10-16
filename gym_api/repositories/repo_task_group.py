@@ -22,6 +22,46 @@ _session_provider = SessionProvider(
 class TaskGroupRepository(BaseRepository):
     @classmethod
     @_session_provider
+    async def update_title(
+            cls,
+            task_group_id: int,
+            title: Optional[str],
+            session: AsyncSession = None
+    ):
+        await session.execute(
+            update(mtg.TaskGroupManager.model),
+            [
+                {
+                    "task_group_id": task_group_id,
+                    "title": title,
+                    "update_dttm": datetime.now()
+                }
+            ]
+        )
+        await session.commit()
+
+    @classmethod
+    @_session_provider
+    async def update_status(
+            cls,
+            task_group_id: int,
+            status: stg.TaskGroupStatus,
+            session: AsyncSession = None
+    ):
+        await session.execute(
+            update(mtg.TaskGroupManager.model),
+            [
+                {
+                    "task_group_id": task_group_id,
+                    "status": status,
+                    "update_dttm": datetime.now()
+                }
+            ]
+        )
+        await session.commit()
+
+    @classmethod
+    @_session_provider
     async def reorder_task_group(
             cls,
             ordered_ids: List[stg.TaskGroupOrderIndex],
@@ -47,12 +87,14 @@ class TaskGroupRepository(BaseRepository):
             cls,
             master_id: int,
             gymer_id: int,
+            title: Optional[str] = None,
             session: AsyncSession = None
     ):
         return await mtg.TaskGroupManager.create(
             session=session,
             master_id=master_id,
-            gymer_id=gymer_id
+            gymer_id=gymer_id,
+            title=title
         )
 
 
@@ -115,6 +157,7 @@ class TaskGroupRepository(BaseRepository):
                 session=session,
                 master_id=current_tg.master_id,
                 gymer_id=current_tg.gymer_id,
+                title=current_tg.title,
                 commit=False
             )
             new_tg_id = new_tg.task_group_id

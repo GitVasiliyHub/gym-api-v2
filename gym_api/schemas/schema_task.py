@@ -16,7 +16,8 @@ class TaskStatus(str, Enum):
     planned = 'planned'
     running = 'running'
     finished = 'finished'
-    delete = 'delete'
+    delete = 'deleted'
+    closed = 'closed'
 
 
 class TaskBase(BaseModel):

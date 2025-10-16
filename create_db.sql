@@ -71,7 +71,8 @@ create table gym.task_group (
 	create_dttm timestamptz not null default now(),
 	update_dttm timestamptz,
 	start_dttm timestamptz,
-	order_idx int
+	order_idx int,
+    title varchar(30)
 );
 
 create table gym.task (

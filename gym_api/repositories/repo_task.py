@@ -54,6 +54,9 @@ class TaskRepository(BaseRepository):
                 commit = True
         update_task_values = {}
 
+        if current_task.update_dttm is None:
+            update_task_values['status'] = st.TaskStatus.running
+
         if task.exercise_id != current_task.exercise_id:
             update_task_values['exercise_id'] = task.exercise_id
 
@@ -61,6 +64,7 @@ class TaskRepository(BaseRepository):
             update_task_values['status'] = task.status
 
         if update_task_values:
+            update_task_values['update_dttm'] = datetime.now()
             model = mt.TaskManager.model
             stmt = (
                 update(model)
@@ -113,8 +117,8 @@ class TaskRepository(BaseRepository):
                 )
                 commit = True
 
-            if commit:
-                await session.commit()
+        if commit:
+            await session.commit()
 
         return await manager.get_scalar_by_where(
             where_exp=[manager.model.task_id == task.task_id],

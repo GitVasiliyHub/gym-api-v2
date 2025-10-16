@@ -17,11 +17,12 @@ class TaskGroupStatus(str, Enum):
     running = 'running'
     finished = 'finished'
     deleted = 'deleted'
-    archived = 'archived'
+    closed = 'closed'
 
 
 class TaskGroup(BaseModel):
     task_group_id: int
+    title: Optional[str]
     master_id: int
     gymer_id: int
     status: TaskGroupStatus
