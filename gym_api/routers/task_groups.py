@@ -28,12 +28,17 @@ async def create_task_group(
     gymer_id: int = Query(
         ...,
         description='gymer id'
+    ),
+    title: Optional[str] = Query(
+        None,
+        description='title'
     )
 ):
     try:
         return await TaskGroupRepository.create(
             master_id=master_id,
-            gymer_id=gymer_id
+            gymer_id=gymer_id,
+            title=title
         )
     except IntegrityError as e:
         detail = IntegrityErrorHandler.handle_integrity_error(e)
@@ -84,6 +89,52 @@ async def reorder_task_group(
     await TaskGroupRepository.reorder_task_group(ordered_ids)
 
     return Response(status_code=200)
+
+
+@router.put(
+    "/{task_group_id}/status",
+    summary='update task_group status',
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def update_task_group_status(
+        task_group_id: int = Path(
+            ...,
+            description='task_group_id'
+        ),
+        status_name: stg.TaskGroupStatus = Query(
+            ...,
+            description='status task_group'
+        )
+):
+    await TaskGroupRepository.update_status(
+        task_group_id=task_group_id,
+        status=status_name
+    )
+
+    return Response(status_code=202)
+
+
+@router.put(
+    "/{task_group_id}/title",
+    summary='update task_group title',
+    status_code=status.HTTP_202_ACCEPTED
+)
+async def update_task_group_title(
+        task_group_id: int = Path(
+            ...,
+            description='task_group_id'
+        ),
+        title: Optional[str] = Query(
+            ...,
+            description='title task_group'
+        )
+):
+    await TaskGroupRepository.update_title(
+        task_group_id=task_group_id,
+        title=title
+    )
+
+    return Response(status_code=202)
 
 
 

@@ -138,6 +138,7 @@ class TaskGroup(Base):
     )
 
     task_group_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    title: Mapped[Optional[str]] = mapped_column(String(30))
     status: Mapped[str] = mapped_column(String(15), server_default=text(
         "'planned'::character varying"))
     create_dttm: Mapped[datetime.datetime] = mapped_column(DateTime(True), server_default=text('now()'))
